@@ -1,0 +1,44 @@
+{
+    "name": "inertia-bootstrap-forms",
+    "version": "1.0.6",
+    "description": "Create bootstrap forms with inertia and twitter bootstrap",
+    "main": "src/index.js",
+    "module": "src/index.js",
+    "type": "module",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "files": [
+        "dist/*",
+        "src/*"
+    ],
+    "author": "NovinVision",
+    "license": "ISC",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/novinvision/inertia-bootstrap-forms.git"
+    },
+    "keywords": [
+        "inertia",
+        "vue",
+        "laravel",
+        "bootstrap",
+        "forms"
+    ],
+    "dependencies": {
+        "vue": "^3.0.0",
+        "vue-tel-input": "^9.3.0",
+        "@vue-leaflet/vue-leaflet": "^0.10.1",
+        "choices.js": "^11.1.0",
+        "vue3-persian-datetime-picker": "^1.2.2",
+        "vue-final-modal": "^4.5.5",
+        "@inertiajs/vue3": "^2.0.3",
+        "@tinymce/tinymce-vue": "^6.1.0",
+        "vue3-bootstrap-components": "^1.0.4",
+        "vue-select": "^4.0.0-beta.6"
+    },
+    "bugs": {
+        "url": "https://github.com/novinvision/inertia-bootstrap-forms/issues"
+    },
+    "homepage": "https://github.com/novinvision/inertia-bootstrap-forms#readme"
+}
