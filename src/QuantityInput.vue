@@ -18,11 +18,11 @@ export default {
     },
     min: {
       type: Number,
-      default: 1
+      default: 0
     },
     max: {
       type: Number,
-      default: 1
+      default: null
     },
   },
   setup(props) {
@@ -38,7 +38,7 @@ export default {
     }
 
     if (!form[props.name]) {
-      form[props.name] = 1;
+      form[props.name] = props.min;
     }
 
     const modelValue = computed({
@@ -55,7 +55,7 @@ export default {
     });
 
     if (!modelValue.value) {
-      modelValue.value = 1;
+      modelValue.value = props.min;
     }
 
     return {modelValue, group, form};

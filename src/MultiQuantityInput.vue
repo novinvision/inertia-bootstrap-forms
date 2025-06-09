@@ -29,7 +29,7 @@ export default {
     },
     min: {
       type: Number,
-      default: 1,
+      default: 0,
     },
     totalMin: {
       type: Number,
@@ -53,7 +53,7 @@ export default {
     }
 
     if (!form[props.name]) {
-      form[props.name] = 1;
+      form[props.name] = props.min;
     }
 
     const modelValue = computed({
