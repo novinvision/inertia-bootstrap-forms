@@ -21,9 +21,11 @@ export default {
     },
     max: {
       type: Number,
+      default: null,
     },
     totalMax: {
       type: Number,
+      default: null,
     },
     min: {
       type: Number,
@@ -31,7 +33,11 @@ export default {
     },
     totalMin: {
       type: Number,
-      default: 1,
+      default: null,
+    },
+    unit: {
+      type: String,
+      default: 'Number',
     },
   },
   setup(props) {
@@ -65,6 +71,11 @@ export default {
 
     return {modelValue, form};
   },
+  computed: {
+    totalQuantity() {
+      return this.modelValue ? Object.values(this.modelValue).reduce((sum, value) => sum + value, 0) : this.options.length;
+    }
+  },
   methods: {},
   data() {
     return {}
@@ -73,8 +84,8 @@ export default {
 </script>
 <template>
   <Dropdown class="multi-quantity-input">
-    <DropdownToggle class="form-control" data-bs-auto-close="outside">
-      asdsa
+    <DropdownToggle class="form-control fanum" data-bs-auto-close="outside">
+      {{ totalQuantity }} {{unit}}
     </DropdownToggle>
     <DropdownMenu>
       <GroupControl :name="name">
@@ -91,6 +102,10 @@ export default {
   </Dropdown>
 </template>
 <style>
+.multi-quantity-input .dropdown-toggle {
+  text-align: start;
+}
+
 .multi-quantity-input .dropdown-menu {
   width: 100%;
   padding: 10px 15px;

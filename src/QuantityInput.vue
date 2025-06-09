@@ -54,6 +54,10 @@ export default {
       }
     });
 
+    if (!modelValue.value) {
+      modelValue.value = 1;
+    }
+
     return {modelValue, group, form};
   },
   methods: {
