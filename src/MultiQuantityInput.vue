@@ -89,9 +89,8 @@ export default {
     </DropdownToggle>
     <DropdownMenu>
       <GroupControl :name="name">
-        <div class="row align-items-center justify-content-between" v-for="(item, key) in options">
-          <div class="col-auto">
-            {{ item?.name || item }}
+        <div class="row align-items-center justify-content-between g-0" v-for="(item, key) in options">
+          <div class="col-auto" v-html="item?.name || item">
           </div>
           <div class="col-auto">
             <QuantityInput :name="key" :min="(item.min || min)" :max="(item.max || max)"/>
@@ -111,6 +110,10 @@ export default {
   padding: 10px 15px;
 }
 
+.multi-quantity-input .dropdown-menu small {
+  color: var(--bs-secondary-color, #cccccc)
+}
+
 .multi-quantity-input .input-group {
   align-items: center;
 }
@@ -120,7 +123,9 @@ export default {
 }
 
 .multi-quantity-input .input-group .form-control {
-  width: 50px;
+  width: 40px;
+  padding-right: 3px;
+  padding-left: 3px;
 }
 
 .multi-quantity-input .input-group .btn {
