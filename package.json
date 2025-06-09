@@ -1,6 +1,6 @@
 {
     "name": "inertia-bootstrap-forms",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "description": "Create bootstrap forms with inertia and twitter bootstrap",
     "main": "src/index.js",
     "module": "src/index.js",
