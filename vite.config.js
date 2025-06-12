@@ -19,7 +19,6 @@ export default defineConfig({
             external: [
                 'vue',
                 '@inertiajs/vue3',
-                'vue3-bootstrap-components',
                 '@vue-leaflet/vue-leaflet',
                 'vue-tel-input',
                 'vue3-persian-datetime-picker',
