@@ -1,5 +1,5 @@
 <script>
-import {getCurrentInstance, computed, inject, ref, toRef, onMounted} from "vue";
+import {computed, inject} from "vue";
 
 export default {
     props: {

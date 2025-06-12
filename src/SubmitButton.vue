@@ -1,5 +1,5 @@
 <script>
-import {Spinner} from "vue3-bootstrap-components";
+import {Spinner} from 'vue3-bootstrap-components';
 
 export default {
     components: {

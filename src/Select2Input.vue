@@ -1,5 +1,5 @@
 <script>
-import '../dist/css/from-select.scss';
+import './css/from-select.scss';
 import Choices from 'choices.js';
 import {computed, inject} from "vue";
 
