@@ -93,10 +93,10 @@ export default {
       this.$refs.input.removeEventListener('search', this.searchHandle);
       this.choices.destroy();
     },
-    searchHandle(event){
+    searchHandle(event) {
       this.doSearch(event.detail.value);
     },
-    async setLoading(){
+    async setLoading() {
       this.loading = true;
       this.choices.clearChoices();
       await this.choices.setChoices(
@@ -111,7 +111,7 @@ export default {
           true
       );
     },
-    async doSearch(searchTerm){
+    async doSearch(searchTerm) {
       await this.setLoading();
 
       if (this.searchController) {
@@ -148,7 +148,7 @@ export default {
     }
   },
   mounted() {
-    if(this.locale === 'en' && document.dir === 'rtl'){
+    if (this.locale === 'en' && document.dir === 'rtl') {
       this.currentLocale = 'fa';
     }
 
@@ -164,7 +164,7 @@ export default {
       searchController: null,
       currentLocale: this.locale,
       localeTranslates: {
-        'fa' : {
+        'fa': {
           placeholderValue: 'انتخاب کنید...',
           searchPlaceholderValue: 'برای جستجو تایپ کنید...',
           searchingPlaceholder: 'در حال جستجو...',
@@ -178,13 +178,22 @@ export default {
 }
 </script>
 <template>
-  <select
-      :name="name"
-      v-model="modelValue"
-      class="form-control-select"
-      :class="{'form-control-select--loading': loading}"
-      :placeholder="placeholder"
-      ref="input">
-    <option :value="item.id" v-for="(item, key) in options" :selected="modelValue === item.id">{{item.name}}</option>
-  </select>
+  <div class="select2-controller" :class="{
+        'is-invalid': form.errors[name]
+  }">
+    <select
+        v-bind="$props"
+        :name="name"
+        v-model="modelValue"
+        class="form-control-select"
+        :class="{
+        'form-control-select--loading': loading,
+        'is-invalid': form.errors[name]
+      }"
+        :placeholder="placeholder"
+        ref="input">
+      <option :value="item.id" v-for="(item, key) in options" :selected="modelValue === item.id">{{ item.name }}
+      </option>
+    </select>
+  </div>
 </template>
