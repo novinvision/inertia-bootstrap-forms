@@ -185,6 +185,6 @@ export default {
       :class="{'form-control-select--loading': loading}"
       :placeholder="placeholder"
       ref="input">
-    <option :value="item.id" v-for="(item, key) in options">{{item.name}}</option>
+    <option :value="item.id" v-for="(item, key) in options" :selected="modelValue === item.id">{{item.name}}</option>
   </select>
 </template>
