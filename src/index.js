@@ -10,7 +10,7 @@ import EmailInput from "./EmailInput.vue";
 import GroupControl from "./GroupControl.vue";
 import FormContainer from "./FormContainer.vue";
 import FormLabel from "./FormLabel.vue";
-import locationInput from "./locationInput.vue";
+import LocationInput from "./LocationInput.vue";
 import MobileInput from "./MobileInput.vue";
 import PasswordInput from "./PasswordInput.vue";
 import QuantityInput from "./QuantityInput.vue";
@@ -35,7 +35,7 @@ export {
     EditorInput,
     GroupControl,
     FormContainer,
-    locationInput,
+    LocationInput,
     MobileInput,
     PasswordInput,
     QuantityInput,

@@ -4,7 +4,7 @@ import {LMap, LTileLayer, LMarker} from "@vue-leaflet/vue-leaflet";
 import {inject} from "vue";
 
 export default {
-  name: 'locationInput',
+  name: 'LocationInput',
   components: {
     LMap, LTileLayer, LMarker
   },
