@@ -76,18 +76,35 @@ export default {
       return this.modelValue ? Object.values(this.modelValue).reduce((sum, value) => sum + value, 0) : this.options.length;
     }
   },
-  methods: {},
+  methods: {
+    show(){
+      this.showDropdown = !this.showDropdown;
+    },
+    clickOnOutside(e){
+      if(!this.$refs.input.contains(e.target)){
+        this.showDropdown = false;
+      }
+    }
+  },
+  mounted() {
+    window.addEventListener('click', this.clickOnOutside);
+  },
+  beforeUnmount() {
+    window.removeEventListener('click', this.clickOnOutside);
+  },
   data() {
-    return {}
+    return {
+      showDropdown : false,
+    }
   }
 }
 </script>
 <template>
-  <Dropdown class="multi-quantity-input">
-    <DropdownToggle class="form-control fanum" data-bs-auto-close="outside">
-      {{ totalQuantity }} {{unit}}
-    </DropdownToggle>
-    <DropdownMenu>
+  <div ref="input" class="multi-quantity-input fanum">
+    <button type="button" class="form-control fanum dropdown-toggle" @click.prevent="show">
+      {{ totalQuantity }} {{ unit }}
+    </button>
+    <div class="multi-quantity-input--dropdown" :class="{'show': showDropdown}">
       <GroupControl :name="name">
         <div class="row align-items-center justify-content-between g-0" v-for="(item, key) in options">
           <div class="col-auto" v-html="item?.name || item">
@@ -97,17 +114,17 @@ export default {
           </div>
         </div>
       </GroupControl>
-    </DropdownMenu>
-  </Dropdown>
+    </div>
+  </div>
 </template>
 <style>
-.multi-quantity-input .dropdown-toggle {
-  text-align: start;
+
+.multi-quantity-input{
+  position: relative;
 }
 
-.multi-quantity-input .dropdown-menu {
-  width: 100%;
-  padding: 10px 15px;
+.multi-quantity-input .dropdown-toggle {
+  text-align: start;
 }
 
 .multi-quantity-input .dropdown-menu small {
@@ -148,5 +165,22 @@ export default {
 .multi-quantity-input .input-group .btn svg,
 .multi-quantity-input .input-group .btn svg path {
   fill: #ffffff;
+}
+
+.multi-quantity-input .multi-quantity-input--dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 2;
+}
+
+.multi-quantity-input .multi-quantity-input--dropdown.show {
+  color: var(--bs-body-color, #333333);
+  background-color: var(--bs-body-bg, #ffffff);
+  border-radius: var(--bs-border-radius, 1rem);
+  display: block;
+  padding: 10px 15px;
 }
 </style>
