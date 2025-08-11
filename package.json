@@ -1,6 +1,6 @@
 {
     "name": "inertia-bootstrap-forms",
-    "version": "1.0.15",
+    "version": "1.0.18",
     "description": "Create bootstrap forms with inertia and twitter bootstrap",
     "main": "dist/inertia-bootstrap-forms.cjs.js",
     "module": "dist/inertia-bootstrap-forms.es.js",
@@ -43,8 +43,8 @@
     },
     "peerDependencies": {
         "@inertiajs/vue3": "^2.0.3",
-        "vue": "^3.0.0",
-        "vue3-bootstrap-components": "file:../novinvision-vue-bootstrap-components"
+        "vue3-bootstrap-components": "1.0.30",
+        "vue": "^3.0.0"
     },
     "devDependencies": {
         "sass-embedded": "^1.89.2",
