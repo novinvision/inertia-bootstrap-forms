@@ -9,7 +9,9 @@ export const CheckboxToggle: DefineComponent<{}, {}, any>;
 export const countryCodes: any;
 export const EditorInput: DefineComponent<{}, {}, any>;
 export const EmailInput: DefineComponent<{}, {}, any>;
-export const FileInput: DefineComponent<{}, {}, any>;
+export const FileInput: DefineComponent<{
+
+}, {}, any>;
 export const FileUploader: DefineComponent<{}, {}, any>;
 export const FormContainer: DefineComponent<{}, {}, any>;
 export const FormLabel: DefineComponent<{}, {}, any>;
