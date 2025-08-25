@@ -41,7 +41,7 @@
         "choices.js": "^11.1.0",
         "vue-tel-input": "^9.3.0",
         "vue3-persian-datetime-picker": "^1.2.2",
-        "vue3-bootstrap-components": "1.0.36"
+        "vue3-bootstrap-components": "1.0.39"
     },
     "peerDependencies": {
         "@inertiajs/vue3": "^2.0.3",
