@@ -44,7 +44,7 @@
     "peerDependencies": {
         "@inertiajs/vue3": "^2.0.3",
         "vue": "^3.0.0",
-        "vue3-bootstrap-components": "1.0.30"
+        "vue3-bootstrap-components": "latest"
     },
     "devDependencies": {
         "sass-embedded": "^1.89.2",
