@@ -112,7 +112,7 @@ export default {
     </div>
 </template>
 
-<style scoped>
+<style>
 .star-rating,
 .star-rating-container {
     display: flex;
