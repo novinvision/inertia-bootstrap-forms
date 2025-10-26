@@ -50,7 +50,7 @@ export default {
         v-model="form[name]"
         :init="{
           base_url: '/js/tinymce/',
-          disabled: true,
+          disabled: false,
           inline: false,
           toolbar_sticky: true,
           menubar: false,
