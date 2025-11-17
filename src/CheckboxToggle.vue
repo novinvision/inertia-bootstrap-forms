@@ -24,12 +24,15 @@ export default {
     },
     hideInput: {
       type: Boolean,
-      default: true,
+      default: false,
     },
   },
   computed: {
     inputID() {
       return this.form.getID(this) + (this.value || '');
+    },
+    selectedValue(){
+      return (typeof this.modelValue == 'object') ? Object.values(this.modelValue) : (this.modelValue ? [this.modelValue] : null)
     }
   },
   setup(props) {
@@ -59,7 +62,7 @@ export default {
 }
 </script>
 <template>
-  <label class="form-check-toggle" :class="{'form-check-toggle--active': modelValue === value}" :for="inputID">
+  <label class="form-check-toggle" :class="{'form-check-toggle--active': (selectedValue || []).includes(value)}" :for="inputID">
     <input
         :name="name + (group ? '_' + group?.name + '-'+group?.groupID : '')"
         :id="inputID"

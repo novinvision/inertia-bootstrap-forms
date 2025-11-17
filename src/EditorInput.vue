@@ -1,6 +1,6 @@
 <script>
 import Editor from '@tinymce/tinymce-vue';
-import {inject} from "vue";
+import {computed, inject} from "vue";
 
 export default {
     components: {Editor},
@@ -27,17 +27,28 @@ export default {
         },
     },
     setup(props) {
-        let form = inject('form');
-
-        if (form === undefined) {
-            form = {
-                errors: {},
-                getID(name) {
-                }
-            };
+      let form = inject('form', {
+        errors: {},
+        getID(name) {
+          return name;
         }
+      });
+      let group = inject('group', {});
 
-        return {form};
+      const modelValue = computed({
+        get() {
+          return (group.value && form.value[group.value.name]) ? group.value?.getData(props.name) : form.value[props.name];
+        },
+        set(value) {
+          if (group?.value?.name) {
+            group.value.setData(props.name, value);
+          } else {
+            form.value[props.name] = value;
+          }
+        }
+      });
+
+      return {modelValue, form, group};
     },
     emits: ['update:modelValue'],
 }
@@ -47,7 +58,7 @@ export default {
     <Editor
         api-key="tbws10u99swxhai03qolxykukvqw99jd4nw9q8z34aocvc4r"
         tinymce-script-src="/js/tinymce/tinymce.min.js"
-        v-model="form[name]"
+        v-model="modelValue"
         :init="{
           base_url: '/js/tinymce/',
           disabled: false,

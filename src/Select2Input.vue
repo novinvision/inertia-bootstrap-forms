@@ -44,6 +44,10 @@ export default {
       type: Boolean,
       default: false
     },
+    hideDropdown: {
+      type: Boolean,
+      default: false
+    },
     search: {
       type: Object,
       default: {
@@ -74,6 +78,15 @@ export default {
     });
 
     return {modelValue, form, group};
+  },
+  computed: {
+    selectedValue() {
+      if (!this.multiple) {
+        return this.modelValue;
+      }
+
+      return (typeof this.modelValue == 'object') ? Object.values(this.modelValue) : (this.modelValue ? [this.modelValue] : null)
+    }
   },
   methods: {
     init() {
@@ -179,7 +192,8 @@ export default {
 </script>
 <template>
   <div class="select2-controller" :class="{
-        'is-invalid': form.errors[name]
+        'is-invalid': form.errors[name],
+        'select2-dropdown-hidden': hideDropdown === true
   }">
     <select
         v-bind="$props"
@@ -192,7 +206,9 @@ export default {
       }"
         :placeholder="placeholder"
         ref="input">
-      <option :value="item.id" v-for="(item, key) in options" :selected="modelValue === item.id">{{ item.name }}
+      <option
+          :value="(item.id || item)" v-for="(item, key) in options"
+          :selected="multiple ? (selectedValue || []).includes(item.id || item) : (item.id || item) === modelValue">{{ item.name || item }}
       </option>
     </select>
   </div>

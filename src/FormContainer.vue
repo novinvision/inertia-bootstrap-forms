@@ -34,7 +34,11 @@ export default {
     setup(props) {
         const formEl = toRef('formEl');
         const formData = reactive(props.modelValue);
-        const form = useForm(formData);
+        const form = useForm({
+          hasMessage: false,
+          successMessage: null,
+          ...formData
+        });
 
         form.getID = function (el) {
             if (typeof el === String) {
@@ -58,6 +62,8 @@ export default {
                     isDirty,
                     errors,
                     hasErrors,
+                    hasMessage,
+                    successMessage,
                     processing,
                     progress,
                     wasSuccessful,
@@ -101,7 +107,10 @@ export default {
                 }).submit(this.method.toString(), this.url, {
                     only: this.only,
                     onStart: () => {
-                        this.$emit('onStart');
+                      this.form.hasMessage = false;
+                      this.form.successMessage = null;
+
+                      this.$emit('onStart');
                         this.form.clearErrors();
                     },
                     onFinish: (data) => {
@@ -111,6 +120,12 @@ export default {
                     },
                     onSuccess: (data) => {
                         this.reset();
+
+                        if(data?.props?.message){
+                          this.form.hasMessage = true;
+                          this.form.successMessage = data?.props?.message;
+                        }
+
                         this.$emit('onSuccess', data);
                     }
                 });
@@ -136,6 +151,9 @@ export default {
                     <li v-for="error in form.errors">{{ error }}</li>
                 </ul>
             </Alert>
+        </slot>
+        <slot name="message" v-if="form.hasMessage" :form="form">
+            <Alert type="success" v-html="form.successMessage"></Alert>
         </slot>
         <slot :form="form" :submit="submit"/>
     </form>
