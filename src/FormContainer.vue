@@ -1,9 +1,9 @@
 <script>
 import {useForm} from "@inertiajs/vue3";
-import {computed, reactive, toRef} from "vue";
+import {computed, defineComponent, reactive, toRef} from "vue";
 import {Alert} from "vue3-bootstrap-components";
 
-export default {
+export default defineComponent({
     components: {Alert},
     emits: ['submit', 'reset', 'onStart', 'onFinish', 'onSuccess', 'change'],
     props: {
@@ -133,7 +133,7 @@ export default {
         }
     },
     expose: ['submit', 'reset'],
-}
+})
 
 </script>
 

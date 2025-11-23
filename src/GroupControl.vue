@@ -1,7 +1,7 @@
 <script>
-import {computed, inject} from "vue";
+import {computed, defineComponent, inject} from "vue";
 
-export default {
+export default defineComponent({
     props: {
         name: {
             type: String,
@@ -58,7 +58,7 @@ export default {
             groupID: '0',
         };
     }
-}
+})
 </script>
 <template>
     <div class="form-control-group" :data-group-id="groupID" ref="groupEl">

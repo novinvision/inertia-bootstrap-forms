@@ -1,8 +1,8 @@
 <script>
 import {InputGroup, InputGroupText} from 'vue3-bootstrap-components';
-import {inject} from "vue";
+import {defineComponent, inject} from "vue";
 
-export default {
+export default defineComponent({
     components: {InputGroup, InputGroupText},
     props: {
         name: {
@@ -40,7 +40,7 @@ export default {
             this.$emit('update:modelValue', parseFloat(this.$number.toEnglish(event.detail?.unmasked)));
         }
     }
-}
+})
 </script>
 <template>
     <InputGroup>

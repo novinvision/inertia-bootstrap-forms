@@ -1,9 +1,9 @@
 <script>
 import {VueTelInput} from 'vue-tel-input';
 import 'vue-tel-input/vue-tel-input.css';
-import {inject} from "vue";
+import {defineComponent, inject} from "vue";
 
-export default {
+export default defineComponent({
     components: {
         VueTelInput
     },
@@ -44,7 +44,7 @@ export default {
             valid: null,
         }
     }
-}
+})
 </script>
 <template>
     <div class="telephone-input input-group fanum" dir="ltr">

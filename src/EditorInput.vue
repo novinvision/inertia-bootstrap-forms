@@ -1,8 +1,8 @@
 <script>
 import Editor from '@tinymce/tinymce-vue';
-import {computed, inject} from "vue";
+import {computed, defineComponent, inject} from "vue";
 
-export default {
+export default defineComponent({
     components: {Editor},
     props: {
         name: {
@@ -51,7 +51,7 @@ export default {
       return {modelValue, form, group};
     },
     emits: ['update:modelValue'],
-}
+})
 </script>
 
 <template>

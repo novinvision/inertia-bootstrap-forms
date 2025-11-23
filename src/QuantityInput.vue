@@ -1,8 +1,8 @@
 <script>
 import {InputGroup, InputGroupText} from 'vue3-bootstrap-components';
-import {computed, inject} from "vue";
+import {computed, defineComponent, inject} from "vue";
 
-export default {
+export default defineComponent({
   components: {InputGroup, InputGroupText},
   props: {
     name: {
@@ -80,7 +80,7 @@ export default {
   data() {
     return {}
   }
-}
+})
 </script>
 <template>
   <InputGroup class="input-group-quantity">

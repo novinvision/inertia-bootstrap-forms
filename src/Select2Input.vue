@@ -1,9 +1,9 @@
 <script>
 import './css/from-select.scss';
 import Choices from 'choices.js';
-import {computed, inject} from "vue";
+import {computed, defineComponent, inject} from "vue";
 
-export default {
+export default defineComponent({
   emits: ['update:modelValue', 'search', 'change', 'selected'],
   props: {
     name: {
@@ -188,7 +188,7 @@ export default {
       },
     }
   }
-}
+})
 </script>
 <template>
   <div class="select2-controller" :class="{

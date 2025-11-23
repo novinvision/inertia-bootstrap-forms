@@ -1,4 +1,97 @@
-// index.d.ts
+import { defineComponent } from 'vue';
+
+// Import کامپوننت‌ها
+import AmountInput from './src/AmountInput.vue';
+import CaptchaInput from './src/CaptchaInput.vue';
+import CheckboxButtonInput from './src/CheckboxButtonInput.vue';
+import CheckboxInput from './src/CheckboxInput.vue';
+import CheckboxToggle from './src/CheckboxToggle.vue';
+import EditorInput from './src/EditorInput.vue';
+import EmailInput from './src/EmailInput.vue';
+import FileInput from './src/FileInput.vue';
+import SimpleUploader from './src/SimpleUploader.vue';
+import FormContainer from './src/FormContainer.vue';
+import FormLabel from './src/FormLabel.vue';
+import GroupControl from './src/GroupControl.vue';
+import LocationInput from './src/LocationInput.vue';
+import MobileInput from './src/MobileInput.vue';
+import MultiQuantityInput from './src/MultiQuantityInput.vue';
+import PasswordInput from './src/PasswordInput.vue';
+import PersianDatePickerInput from './src/PersianDatePickerInput.vue';
+import QuantityInput from './src/QuantityInput.vue';
+import SecondarySubmitButton from './src/SecondarySubmitButton.vue';
+import Select2Input from './src/Select2Input.vue';
+import StarRatingInput from './src/StarRatingInput.vue';
+import SubmitButton from './src/SubmitButton.vue';
+import TelInput from './src/TelInput.vue';
+import TextAreaInput from './src/TextAreaInput.vue';
+import TextInput from './src/TextInput.vue';
+import { countryCodes } from './src/countryCodes';
+
+// Export تکی
+export {
+    AmountInput,
+    CaptchaInput,
+    CheckboxButtonInput,
+    CheckboxInput,
+    CheckboxToggle,
+    countryCodes,
+    EditorInput,
+    EmailInput,
+    FileInput,
+    SimpleUploader,
+    FormContainer,
+    FormLabel,
+    GroupControl,
+    LocationInput,
+    MobileInput,
+    MultiQuantityInput,
+    PasswordInput,
+    PersianDatePickerInput,
+    QuantityInput,
+    SecondarySubmitButton,
+    Select2Input,
+    StarRatingInput,
+    SubmitButton,
+    TelInput,
+    TextAreaInput,
+    TextInput,
+    Quantity,
+    File,
+};
+
+// Export پیش‌فرض برای import * as
+const Vue3FormComponents = {
+    AmountInput,
+    CaptchaInput,
+    CheckboxButtonInput,
+    CheckboxInput,
+    CheckboxToggle,
+    countryCodes,
+    EditorInput,
+    EmailInput,
+    FileInput,
+    SimpleUploader,
+    FormContainer,
+    FormLabel,
+    GroupControl,
+    LocationInput,
+    MobileInput,
+    MultiQuantityInput,
+    PasswordInput,
+    PersianDatePickerInput,
+    QuantityInput,
+    SecondarySubmitButton,
+    Select2Input,
+    StarRatingInput,
+    SubmitButton,
+    TelInput,
+    TextAreaInput,
+    TextInput,
+};
+
+export default Vue3FormComponents;
+
 import { DefineComponent } from 'vue';
 
 export const AmountInput: DefineComponent<{}, {}, any>;
@@ -9,10 +102,8 @@ export const CheckboxToggle: DefineComponent<{}, {}, any>;
 export const countryCodes: any;
 export const EditorInput: DefineComponent<{}, {}, any>;
 export const EmailInput: DefineComponent<{}, {}, any>;
-export const FileInput: DefineComponent<{
-
-}, {}, any>;
-export const FileUploader: DefineComponent<{}, {}, any>;
+export const FileInput: DefineComponent<{}, {}, any>;
+export const SimpleUploader: DefineComponent<{}, {}, any>;
 export const FormContainer: DefineComponent<{}, {}, any>;
 export const FormLabel: DefineComponent<{}, {}, any>;
 export const GroupControl: DefineComponent<{}, {}, any>;
@@ -30,7 +121,7 @@ export const TelInput: DefineComponent<{}, {}, any>;
 export const TextAreaInput: DefineComponent<{}, {}, any>;
 export const TextInput: DefineComponent<{}, {}, any>;
 
-// این قسمت برای اینکه import * as ... هم ساپورت بشه
+// Export پیش‌فرض
 declare const Vue3FormComponents: {
     AmountInput: typeof AmountInput;
     CaptchaInput: typeof CaptchaInput;
@@ -41,7 +132,7 @@ declare const Vue3FormComponents: {
     EditorInput: typeof EditorInput;
     EmailInput: typeof EmailInput;
     FileInput: typeof FileInput;
-    FileUploader: typeof FileUploader;
+    SimpleUploader: typeof SimpleUploader;
     FormContainer: typeof FormContainer;
     FormLabel: typeof FormLabel;
     GroupControl: typeof GroupControl;
@@ -58,6 +149,7 @@ declare const Vue3FormComponents: {
     TelInput: typeof TelInput;
     TextAreaInput: typeof TextAreaInput;
     TextInput: typeof TextInput;
+    Quantity: typeof QuantityInput;
 };
 
 export default Vue3FormComponents;

@@ -1,9 +1,10 @@
 <script>
 import "leaflet/dist/leaflet.css";
+import "./css/location.scss";
 import {LMap, LTileLayer, LMarker} from "@vue-leaflet/vue-leaflet";
-import {inject} from "vue";
+import {defineComponent, inject} from "vue";
 
-export default {
+export default defineComponent({
   name: 'LocationInput',
   components: {
     LMap, LTileLayer, LMarker
@@ -60,7 +61,7 @@ export default {
     };
   },
 
-}
+})
 </script>
 <template>
   <div class="location-map-container"
@@ -75,50 +76,3 @@ export default {
     </l-map>
   </div>
 </template>
-<style>
-.location-map-container {
-  position: relative;
-  width: 100%;
-  height: 300px;
-  overflow: hidden;
-  border-radius: var(--bs-border-radius);
-}
-
-.location-map-container.is-invalid {
-  border: 1px solid var(--bs-form-invalid-border-color);
-}
-
-.location-map-container[disabled],
-.location-map-container.disabled:before {
-  content: "";
-  background-color: rgba(var(--bs-light-rgb), 0.4);
-  display: block;
-  position: absolute;
-  top: 0;
-  right: 0;
-  left: 0;
-  bottom: 0;
-  z-index: 9999;
-}
-
-.location-map-container {
-  .leaflet-pane,
-  .leaflet-tile,
-  .leaflet-marker-icon,
-  .leaflet-marker-shadow,
-  .leaflet-tile-container,
-  .leaflet-pane > svg,
-  .leaflet-pane > canvas,
-  .leaflet-zoom-box,
-  .leaflet-image-layer,
-  .leaflet-layer {
-    left: auto;
-    right: 0;
-  }
-
-  .leaflet-control-attribution.leaflet-control {
-    display: none;
-  }
-}
-
-</style>

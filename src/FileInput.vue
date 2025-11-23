@@ -1,7 +1,7 @@
 <script>
-import {inject} from "vue";
+import {defineComponent, inject} from "vue";
 
-export default {
+export default defineComponent({
     props: {
         modelValue: '',
         name: {
@@ -99,7 +99,7 @@ export default {
             files: [],
         }
     }
-}
+})
 </script>
 <template>
     <div class="file-input-uploader">

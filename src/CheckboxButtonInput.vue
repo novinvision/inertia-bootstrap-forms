@@ -1,7 +1,7 @@
 <script>
-import {inject} from "vue";
+import {defineComponent, inject} from "vue";
 
-export default {
+export default defineComponent({
     emits: ['change'],
     props: {
         name: {
@@ -43,7 +43,7 @@ export default {
 
         return {form};
     },
-}
+})
 </script>
 <template>
     <label class="btn-label" :for="form.getID(name)+(id || value)" :class="{'active': (form[name] === value || form[name] === true)}">

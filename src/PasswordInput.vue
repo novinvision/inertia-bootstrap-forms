@@ -1,7 +1,8 @@
 <script>
 import TextInput from "./TextInput.vue";
+import {defineComponent} from "vue";
 
-export default {
+export default defineComponent({
     components: {
         TextInput
     },
@@ -12,7 +13,7 @@ export default {
             required: true,
         },
     },
-}
+})
 </script>
 <template>
     <TextInput

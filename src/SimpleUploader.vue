@@ -1,7 +1,7 @@
 <script>
-import {inject} from "vue";
+import {defineComponent, inject} from "vue";
 
-export default {
+export default defineComponent({
     props: {
         modelValue: '',
         name: {
@@ -99,7 +99,7 @@ export default {
             files: [],
         }
     }
-}
+})
 </script>
 <template>
     <div class="file-input-uploader">
@@ -138,59 +138,3 @@ export default {
         </div>
     </div>
 </template>
-<style>
-.file-input-uploader .file-input-uploader--list .file-input-uploader--list-item {
-    background-color: var(--bs-secondary-bg);
-    border-radius: var(--bs-border-radius);
-    position: relative;
-    display: flex;
-    align-items: center;
-    margin: 5px 0;
-    padding: 5px 10px;
-}
-
-.file-input-uploader .file-input-uploader--list .file-input-uploader--list-item--size {
-    margin-left: auto;
-    font-size: 90%;
-    padding: 0 5px;
-    color: var(--bs-secondary-color);
-}
-
-.file-input-uploader .file-input-uploader--list-item--btn {
-    display: inline-block;
-    outline: none;
-    border: 0;
-    padding: 7px 2px;
-}
-
-.file-input-uploader .file-input-uploader--list-item--btn:not(:last-child){
-    margin-right: 5px;
-}
-
-.file-input-uploader .file-input-uploader--list-item--btn > svg {
-    height: 20px;
-    width: 20px;
-    vertical-align: middle;
-}
-
-.file-input-uploader .file-input-uploader--progress {
-    position: absolute;
-    top: 2px;
-    left: 5px;
-    right: 5px;
-}
-
-.file-input-uploader .file-input-uploader--progress > div {
-    background-color: #de0021;
-    height: 7px;
-    width: 0;
-    min-width: 1%;
-    border-radius: var(--bs-border-radius)
-}
-
-.file-input-uploader .file-input-uploader--list-error {
-    font-size: 90%;
-    margin: 0 5px;
-    color: var(--bs-danger, #de0021);
-}
-</style>

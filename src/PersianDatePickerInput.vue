@@ -1,8 +1,8 @@
 <script>
 import Vue3PersianDatetimePicker from 'vue3-persian-datetime-picker';
-import {computed, inject} from "vue";
+import {computed, defineComponent, inject} from "vue";
 
-export default {
+export default defineComponent({
     components: {Vue3PersianDatetimePicker},
     props: {
         name: {
@@ -74,7 +74,7 @@ export default {
     data() {
         return {}
     }
-}
+})
 </script>
 
 <template>

@@ -1,7 +1,8 @@
 <script>
 import TextInput from "./TextInput.vue";
+import {defineComponent} from "vue";
 
-export default {
+export default defineComponent({
     components: {TextInput},
     props: {
         name: {
@@ -56,7 +57,7 @@ export default {
             src: this.url + Math.random(),
         };
     }
-};
+});
 
 </script>
 <template>

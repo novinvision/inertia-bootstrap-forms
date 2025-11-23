@@ -4,15 +4,10 @@ import path from 'path';
 
 export default defineConfig({
     plugins: [vue()],
-    resolve: {
-        alias: {
-            '@': path.resolve(__dirname, './src')
-        }
-    },
     build: {
         lib: {
             entry: path.resolve(__dirname, 'src/index.js'),
-            name: 'InertiaBootstrapForms',
+            name: 'Vue3FormComponents',
             fileName: (format) => `inertia-bootstrap-forms.${format}.js`,
         },
         rollupOptions: {

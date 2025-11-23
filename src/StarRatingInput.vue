@@ -1,7 +1,7 @@
 <script>
-import {inject} from 'vue';
+import {defineComponent, inject} from 'vue';
 
-export default {
+export default defineComponent({
     emits: ['update:modelValue'],
     props: {
         name: {
@@ -98,7 +98,7 @@ export default {
             isRTL: false,
         }
     }
-}
+})
 </script>
 <template>
     <div class="star-rating">

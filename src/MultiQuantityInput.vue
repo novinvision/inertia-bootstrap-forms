@@ -1,10 +1,10 @@
 <script>
 import {Dropdown, DropdownToggle, DropdownMenu, InputGroup, InputGroupText} from 'vue3-bootstrap-components';
-import {computed, inject} from "vue";
+import {computed, defineComponent, inject} from "vue";
 import QuantityInput from "./QuantityInput.vue";
 import GroupControl from "./GroupControl.vue";
 
-export default {
+export default defineComponent({
   components: {GroupControl, QuantityInput, InputGroup, InputGroupText, Dropdown, DropdownToggle, DropdownMenu},
   props: {
     name: {
@@ -97,7 +97,7 @@ export default {
       showDropdown : false,
     }
   }
-}
+})
 </script>
 <template>
   <div ref="input" class="multi-quantity-input fanum">

@@ -1,13 +1,14 @@
 <script>
 import {Spinner} from 'vue3-bootstrap-components';
+import {defineComponent} from "vue";
 
-export default {
+export default defineComponent({
     components: {
         Spinner
     },
     inject: ['form'],
     props: {},
-}
+})
 </script>
 <template>
     <button

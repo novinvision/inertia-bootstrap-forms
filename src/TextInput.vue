@@ -1,7 +1,7 @@
 <script>
-import {computed, inject} from "vue";
+import {computed, inject, defineComponent} from "vue";
 
-export default {
+export default defineComponent({
     props: {
         name: {
             type: String,
@@ -37,7 +37,7 @@ export default {
 
         return {modelValue, form, group};
     },
-}
+})
 </script>
 <template>
     <input

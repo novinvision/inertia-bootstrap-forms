@@ -1,11 +1,13 @@
 <script>
-export default {
+import {defineComponent} from "vue";
+
+export default defineComponent({
     props: {
         default: false,
         required: false,
     },
     emits: ['update:modelValue'],
-}
+})
 </script>
 
 <template>
