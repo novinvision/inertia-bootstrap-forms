@@ -22,6 +22,8 @@ import SubmitButton from "./SubmitButton.vue";
 import TelInput from "./TelInput.vue";
 import TextAreaInput from "./TextAreaInput.vue";
 import TextInput from "./TextInput.vue";
+import DropzoneInput from "./DropzoneInput.vue";
+import SimpleUploader from "./SimpleUploader.vue";
 
 export {
     AmountInput,
@@ -33,6 +35,8 @@ export {
     EmailInput,
     PersianDatePickerInput,
     EditorInput,
+    DropzoneInput,
+    SimpleUploader,
     GroupControl,
     FormContainer,
     LocationInput,

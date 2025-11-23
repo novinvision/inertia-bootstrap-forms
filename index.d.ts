@@ -26,6 +26,7 @@ import SubmitButton from './src/SubmitButton.vue';
 import TelInput from './src/TelInput.vue';
 import TextAreaInput from './src/TextAreaInput.vue';
 import TextInput from './src/TextInput.vue';
+import DropzoneInput from './src/DropzoneInput.vue';
 import { countryCodes } from './src/countryCodes';
 
 // Export تکی
@@ -38,6 +39,7 @@ export {
     countryCodes,
     EditorInput,
     EmailInput,
+    DropzoneInput,
     FileInput,
     SimpleUploader,
     FormContainer,
@@ -69,6 +71,7 @@ const Vue3FormComponents = {
     CheckboxToggle,
     countryCodes,
     EditorInput,
+    DropzoneInput,
     EmailInput,
     FileInput,
     SimpleUploader,
@@ -102,6 +105,7 @@ export const CheckboxToggle: DefineComponent<{}, {}, any>;
 export const countryCodes: any;
 export const EditorInput: DefineComponent<{}, {}, any>;
 export const EmailInput: DefineComponent<{}, {}, any>;
+export const DropzoneInput: DefineComponent<{}, {}, any>;
 export const FileInput: DefineComponent<{}, {}, any>;
 export const SimpleUploader: DefineComponent<{}, {}, any>;
 export const FormContainer: DefineComponent<{}, {}, any>;
@@ -128,6 +132,7 @@ declare const Vue3FormComponents: {
     CheckboxButtonInput: typeof CheckboxButtonInput;
     CheckboxInput: typeof CheckboxInput;
     CheckboxToggle: typeof CheckboxToggle;
+    DropzoneInput: typeof DropzoneInput;
     countryCodes: typeof countryCodes;
     EditorInput: typeof EditorInput;
     EmailInput: typeof EmailInput;

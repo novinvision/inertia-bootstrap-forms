@@ -17,6 +17,7 @@ export default defineConfig({
                 '@vue-leaflet/vue-leaflet',
                 'vue-tel-input',
                 'vue3-persian-datetime-picker',
+                'dropzone',
                 '@tinymce/tinymce-vue',
             ],
             output: {
