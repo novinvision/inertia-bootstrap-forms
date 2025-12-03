@@ -153,7 +153,7 @@ export default defineComponent({
             </Alert>
         </slot>
         <slot name="message" v-if="form.hasMessage" :form="form">
-            <Alert type="success" v-html="form.successMessage"></Alert>
+            <Alert type="success" v-html="form.successMessage" v-if="form.successMessage"></Alert>
         </slot>
         <slot :form="form" :submit="submit"/>
     </form>
