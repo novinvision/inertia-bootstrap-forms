@@ -92,6 +92,7 @@ export default defineComponent({
     init() {
       this.choices = new Choices(this.$refs.input, {
         searchEnabled: (this.searchEnabled || !!this.search?.url),
+        searchChoices: (this.searchEnabled && !this.search?.url),
         removeItemButton: true,
         placeholderValue: this.placeholder,
         searchPlaceholderValue: this.placeholder,
@@ -125,6 +126,8 @@ export default defineComponent({
       );
     },
     async doSearch(searchTerm) {
+      if(!this.search?.url) return;
+
       await this.setLoading();
 
       if (this.searchController) {
