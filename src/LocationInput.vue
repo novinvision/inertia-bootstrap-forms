@@ -78,7 +78,7 @@ export default defineComponent({
           layer-type="base"
           name="OpenStreetMap"
       ></l-tile-layer>
-      <LMarker :lat-lng="marker" v-if="marker" :draggable="(!readonly || !disabled)" @dragend="setMarker"/>
+      <LMarker :lat-lng="marker" v-if="marker" :draggable="(!readonly && !disabled)" @dragend="setMarker"/>
     </l-map>
   </div>
 </template>
