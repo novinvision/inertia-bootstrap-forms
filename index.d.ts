@@ -111,7 +111,21 @@ export const SimpleUploader: DefineComponent<{}, {}, any>;
 export const FormContainer: DefineComponent<{}, {}, any>;
 export const FormLabel: DefineComponent<{}, {}, any>;
 export const GroupControl: DefineComponent<{}, {}, any>;
-export const LocationInput: DefineComponent<{}, {}, any>;
+export const LocationInput: DefineComponent<{
+    name: {
+        type: String,
+        default: 'location',
+        required: false,
+    },
+    disabled: {
+        type: [Boolean, String],
+        default: false,
+    },
+    readonly: {
+        type: [Boolean, String],
+        default: false,
+    },
+}, {}, any>;
 export const MobileInput: DefineComponent<{}, {}, any>;
 export const MultiQuantityInput: DefineComponent<{}, {}, any>;
 export const PasswordInput: DefineComponent<{}, {}, any>;

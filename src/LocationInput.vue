@@ -19,6 +19,10 @@ export default defineComponent({
       type: [Boolean, String],
       default: false,
     },
+    readonly: {
+      type: [Boolean, String],
+      default: false,
+    },
     modelValue: Object,
   },
   setup(props) {
@@ -38,6 +42,8 @@ export default defineComponent({
   },
   methods: {
     setMarker(event) {
+      if(this.readonly) return;
+
       this.marker = {
         lat: event?.latlng?.lat || event?.target?._latlng?.lat,
         lng: event?.latlng?.lng || event?.target?._latlng?.lng,
@@ -72,7 +78,7 @@ export default defineComponent({
           layer-type="base"
           name="OpenStreetMap"
       ></l-tile-layer>
-      <LMarker :lat-lng="marker" v-if="marker" :draggable="true" @dragend="setMarker"/>
+      <LMarker :lat-lng="marker" v-if="marker" :draggable="(!readonly || !disabled)" @dragend="setMarker"/>
     </l-map>
   </div>
 </template>
