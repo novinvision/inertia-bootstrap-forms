@@ -5,7 +5,7 @@ import {Alert} from "vue3-bootstrap-components";
 
 export default defineComponent({
     components: {Alert},
-    emits: ['submit', 'reset', 'onStart', 'onFinish', 'onSuccess', 'change'],
+    emits: ['submit', 'reset', 'onStart', 'onFinish', 'onSuccess', 'onError', 'change'],
     props: {
         url: {
             type: String,
@@ -107,8 +107,12 @@ export default defineComponent({
                 }).submit(this.method.toString(), this.url, {
                     only: this.only,
                     onStart: () => {
-                      this.form.hasMessage = false;
-                      this.form.successMessage = null;
+                      if(this.form.hasMessage){
+                        this.form.hasMessage = false;
+                      }
+                      if(this.form.successMessage){
+                        this.form.hasMessage = null;
+                      }
 
                       this.$emit('onStart');
                         this.form.clearErrors();
@@ -117,6 +121,7 @@ export default defineComponent({
                         this.$emit('onFinish', data);
                     },
                     onError: (errors) => {
+                      this.$emit('onError', errors);
                     },
                     onSuccess: (data) => {
                         this.reset();

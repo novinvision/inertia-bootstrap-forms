@@ -99,7 +99,27 @@ import { DefineComponent } from 'vue';
 
 export const AmountInput: DefineComponent<{}, {}, any>;
 export const CaptchaInput: DefineComponent<{}, {}, any>;
-export const CheckboxButtonInput: DefineComponent<{}, {}, any>;
+export const CheckboxButtonInput: DefineComponent<{
+    name: {
+        type: String,
+        required: true,
+    },
+    id: {
+        type: String,
+        default: '',
+        required: false,
+    },
+    value: {
+        type: String,
+        default: 'yes',
+        required: false,
+    },
+    type: {
+        type: String,
+        default: 'radio',
+        required: false,
+    },
+}, {}, any>;
 export const CheckboxInput: DefineComponent<{}, {}, any>;
 export const CheckboxToggle: DefineComponent<{}, {}, any>;
 export const countryCodes: any;
