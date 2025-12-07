@@ -94,6 +94,9 @@ export default defineComponent({
       _this.$emit('update:modelValue', value);
     });
   },
+  beforeUnmount() {
+    this.rangeSliderEn?.destroy();
+  },
   data() {
     return {
       rangeSliderEn: null
