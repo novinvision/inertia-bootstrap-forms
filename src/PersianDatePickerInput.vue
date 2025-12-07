@@ -2,6 +2,7 @@
 import Vue3PersianDatetimePicker from 'vue3-persian-datetime-picker';
 import {computed, defineComponent, inject} from "vue";
 
+let _this;
 export default defineComponent({
   components: {Vue3PersianDatetimePicker},
   emits: ['update:modelValue', 'change'],
@@ -60,13 +61,16 @@ export default defineComponent({
   },
   watch: {
     modelValue: (newVal, oldVal) => {
-      this.$emit('change', newVal, oldVal);
+      _this?.$emit('change', newVal, oldVal);
     }
   },
   methods: {
     clear() {
       this.modelValue = null;
     },
+  },
+  mounted() {
+    _this = this;
   },
   computed: {
     isSsr() {
