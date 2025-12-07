@@ -158,6 +158,44 @@ export const SubmitButton: DefineComponent<{}, {}, any>;
 export const TelInput: DefineComponent<{}, {}, any>;
 export const TextAreaInput: DefineComponent<{}, {}, any>;
 export const TextInput: DefineComponent<{}, {}, any>;
+export const RangeSliderInput: DefineComponent<{
+    name: {
+        type: String,
+        default: null,
+    },
+    modelValue: {
+        type: Number,
+        default: 0
+    },
+    value: {
+        type: Number,
+        default: 0
+    },
+    min: {
+        type: Number,
+        default: 1
+    },
+    max: {
+        type: Number,
+        default: 100
+    },
+    step: {
+        type: Number,
+        default: 1
+    },
+    readonly: {
+        type: Boolean,
+        default: false
+    },
+    range: {
+        type: Boolean,
+        default: false
+    },
+    options: {
+        type: Object,
+        default: {}
+    }
+}, {}, any>;
 
 // Export پیش‌فرض
 declare const Vue3FormComponents: {
@@ -189,6 +227,7 @@ declare const Vue3FormComponents: {
     TextAreaInput: typeof TextAreaInput;
     TextInput: typeof TextInput;
     Quantity: typeof QuantityInput;
+    RangeSliderInput: typeof RangeSliderInput;
 };
 
 export default Vue3FormComponents;

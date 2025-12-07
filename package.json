@@ -1,6 +1,6 @@
 {
     "name": "inertia-bootstrap-forms",
-    "version": "1.0.42",
+    "version": "1.0.43",
     "description": "Create bootstrap forms with inertia and twitter bootstrap",
     "main": "dist/inertia-bootstrap-forms.cjs.js",
     "module": "dist/inertia-bootstrap-forms.es.js",
@@ -40,9 +40,10 @@
         "@vitejs/plugin-vue": "^5.2.4",
         "@vue-leaflet/vue-leaflet": "^0.10.1",
         "choices.js": "^11.1.0",
+        "svelte-range-slider-pips": "^4.1.0",
         "vue-tel-input": "^9.3.0",
-        "vue3-persian-datetime-picker": "^1.2.2",
-        "vue3-bootstrap-components": "1.0.42"
+        "vue3-bootstrap-components": "1.0.42",
+        "vue3-persian-datetime-picker": "^1.2.2"
     },
     "peerDependencies": {
         "@inertiajs/vue3": ">2.0",
@@ -50,8 +51,8 @@
         "vue": "^3.0"
     },
     "devDependencies": {
-        "sass-embedded": "^1.89.2",
         "dropzone": "^6.0.0-beta.2",
+        "sass-embedded": "^1.89.2",
         "vite": "^5"
     },
     "bugs": {

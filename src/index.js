@@ -24,6 +24,7 @@ import TextAreaInput from "./TextAreaInput.vue";
 import TextInput from "./TextInput.vue";
 import DropzoneInput from "./DropzoneInput.vue";
 import SimpleUploader from "./SimpleUploader.vue";
+import RangeSliderInput from "./RangeSliderInput.vue";
 
 export {
     AmountInput,
@@ -37,6 +38,7 @@ export {
     EditorInput,
     DropzoneInput,
     SimpleUploader,
+    RangeSliderInput,
     GroupControl,
     FormContainer,
     LocationInput,
