@@ -126,8 +126,6 @@ export default defineComponent({
             this.$emit('onError', errors);
           },
           onSuccess: (data) => {
-            this.reset();
-
             if (data?.props?.message) {
               this.form.hasMessage = true;
               this.form.successMessage = data?.props?.message;
