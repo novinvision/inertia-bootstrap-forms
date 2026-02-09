@@ -150,15 +150,15 @@ export default defineComponent({
         @reset="$emit('reset')"
         :class="{'form-processing loading': form.processing,}"
         :novalidate="!!Object.values(form.errors).length">
-    <slot name="errors" v-if="form.hasErrors" :form="form">
-      <Alert type="danger">
+    <slot name="errors" :form="form">
+      <Alert type="danger" v-if="form.hasErrors">
         <ul class="list-unstyled p-0 m-0 fanum">
           <li v-for="error in form.errors">{{ error }}</li>
         </ul>
       </Alert>
     </slot>
-    <slot name="message" v-if="form.hasMessage" :form="form">
-      <Alert type="success" v-html="form.successMessage" v-if="form.successMessage"></Alert>
+    <slot name="message" :form="form">
+      <Alert type="success" v-html="form.successMessage" v-if="form.hasMessage && form.successMessage"/>
     </slot>
     <slot :form="form" :submit="submit"/>
   </form>

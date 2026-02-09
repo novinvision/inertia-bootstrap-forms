@@ -17,6 +17,7 @@ export default defineComponent({
         invalid: Boolean,
         allowLink: Boolean,
         height: Number,
+        minHeight: Number,
         useStyle: {
             type: Boolean,
             default: false,
@@ -109,7 +110,7 @@ export default defineComponent({
           allow_style: true,
           allow_link_style: false,
           height: this.height || 400,
-          min_height: this.height || 400,
+          min_height: (this.minHeight || this.height) || 400,
           allow_code: false,
           autoresize_on_init: true,
           autosave_ask_before_unload: false,
