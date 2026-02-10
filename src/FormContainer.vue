@@ -148,7 +148,7 @@ export default defineComponent({
         :method="method"
         @submit.prevent="submit"
         @reset="$emit('reset')"
-        :class="{'form-processing loading': form.processing,}"
+        :class="{'form-processing': form.processing}"
         :novalidate="!!Object.values(form.errors).length">
     <slot name="errors">
       <Alert type="danger" v-if="form.hasErrors">
