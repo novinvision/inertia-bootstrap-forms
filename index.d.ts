@@ -123,7 +123,34 @@ export const CheckboxButtonInput: DefineComponent<{
 export const CheckboxInput: DefineComponent<{}, {}, any>;
 export const CheckboxToggle: DefineComponent<{}, {}, any>;
 export const countryCodes: any;
-export const EditorInput: DefineComponent<{}, {}, any>;
+export const EditorInput: DefineComponent<{
+    name: {
+        type: String,
+        required: true,
+    },
+    modelValue: String,
+    placeholder: {
+        type: String,
+        default: 'اینجا بنویسید...',
+    },
+    invalid: Boolean,
+    allowLink: Boolean,
+    height: Number,
+    minHeight: Number,
+    useStyle: {
+        type: Boolean,
+        default: false,
+    },
+    modules: {
+        default: [],
+        required: false,
+    },
+    options: {
+        type: Object,
+        default: {},
+        required: false,
+    },
+}, {}, any>;
 export const EmailInput: DefineComponent<{}, {}, any>;
 export const DropzoneInput: DefineComponent<{}, {}, any>;
 export const FileInput: DefineComponent<{}, {}, any>;
