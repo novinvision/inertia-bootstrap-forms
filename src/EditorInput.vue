@@ -9,6 +9,11 @@ export default defineComponent({
       type: String,
       required: true,
     },
+    placeholder: {
+      type: String,
+      default: '',
+      required: false,
+    },
     modelValue: String,
     options: {
       type: Object,
@@ -48,7 +53,10 @@ export default defineComponent({
   <Editor
       v-model="modelValue"
       class="tiny-editor-input-el"
-      :init="options"
+      :init="{
+        placeholder: this.placeholder,
+        ...options
+      }"
   />
 </template>
 <style>
