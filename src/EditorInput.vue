@@ -70,4 +70,8 @@ textarea.tiny-editor-input-el {
   background-repeat: no-repeat;
   background-position: center center;
 }
+
+.tox .tox-edit-area::before{
+  display: none;
+}
 </style>
