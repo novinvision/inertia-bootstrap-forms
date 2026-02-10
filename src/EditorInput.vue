@@ -12,7 +12,10 @@ export default defineComponent({
     placeholder: {
       type: String,
       default: '',
-      required: false,
+    },
+    disabled: {
+      type: Boolean,
+      default: false,
     },
     modelValue: String,
     options: {
@@ -54,6 +57,7 @@ export default defineComponent({
       v-model="modelValue"
       class="tiny-editor-input-el"
       :init="{
+        disabled: this.disabled,
         placeholder: this.placeholder,
         ...options
       }"
