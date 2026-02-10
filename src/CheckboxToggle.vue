@@ -100,7 +100,7 @@ export default defineComponent({
 
 .form-check-toggle.form-check-toggle--active {
   background-color: var(--bs-warning-bg-subtle, #ffda6a);
-  border-color: var(--bs-alert-border-color, #fff0c3);
+  border-color: var(--bs-warning-border-subtle, var(--bs-alert-border-color, #fff0c3));
 }
 
 .form-check-toggle .form-check-toggle--input-hide {
