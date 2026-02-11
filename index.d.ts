@@ -10,6 +10,7 @@ import EditorInput from './src/EditorInput.vue';
 import EmailInput from './src/EmailInput.vue';
 import FileInput from './src/FileInput.vue';
 import SimpleUploader from './src/SimpleUploader.vue';
+import UppyInput from './src/UppyInput.vue';
 import FormContainer from './src/FormContainer.vue';
 import FormLabel from './src/FormLabel.vue';
 import GroupControl from './src/GroupControl.vue';
@@ -40,6 +41,7 @@ export {
     EditorInput,
     EmailInput,
     DropzoneInput,
+    UppyInput,
     FileInput,
     SimpleUploader,
     FormContainer,
@@ -72,6 +74,7 @@ const Vue3FormComponents = {
     countryCodes,
     EditorInput,
     DropzoneInput,
+    UppyInput,
     EmailInput,
     FileInput,
     SimpleUploader,
@@ -153,6 +156,19 @@ export const EditorInput: DefineComponent<{
 }, {}, any>;
 export const EmailInput: DefineComponent<{}, {}, any>;
 export const DropzoneInput: DefineComponent<{}, {}, any>;
+export const UppyInput: DefineComponent<{
+    name: {
+        type: String,
+        required: true,
+    },
+    multiple: {
+        type: Boolean,
+        default: false,
+    },
+    modelValue: String,
+    url: { type: String, default: "/upload" },
+    options: { type: Object, default: () => ({}) },
+}, {}, any>;
 export const FileInput: DefineComponent<{}, {}, any>;
 export const SimpleUploader: DefineComponent<{}, {}, any>;
 export const FormContainer: DefineComponent<{}, {}, any>;

@@ -95,7 +95,6 @@ export default defineComponent({
     });
   },
   beforeUnmount() {
-    this.rangeSliderEn?.destroy();
   },
   data() {
     return {
