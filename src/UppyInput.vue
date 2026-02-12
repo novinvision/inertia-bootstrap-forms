@@ -1,6 +1,6 @@
 <template>
-  <div class="uppy-input-area" ref="inputEl">
-    <UppyContextProvider :uppy="uppy">
+  <div class="uppy-input-area" ref="inputEl" v-if="uppy">
+    <UppyContextProvider :name="'uu' + name" :uppy="uppy">
       <slot :uppy="uppy">
         <FilesList class="uppy-file-lists"/>
         <Dropzone/>
@@ -10,13 +10,10 @@
 </template>
 
 <script setup>
-import {computed, inject, onBeforeUnmount, onMounted, reactive, ref} from 'vue'
-import Audio from '@uppy/audio';
-
+import {computed, inject, onBeforeUnmount, onMounted, shallowRef, ref} from 'vue'
 import {
   Dropzone,
   FilesList,
-  ProviderIcon,
   UppyContextProvider,
 } from '@uppy/vue';
 import Uppy from '@uppy/core';
@@ -26,79 +23,26 @@ import '@uppy/vue/css/style.css';
 import '@uppy/audio/css/style.min.css';
 
 const props = defineProps({
-  name: {
-    type: String,
-    required: true,
-  },
-  multiple: {
-    type: Boolean,
-    default: false,
-  },
-  url: {
-    type: String,
-    default: '/upload',
-  },
-  config: {
-    type: Object,
-    default: {},
-  },
-  errorHandler: {
-    type: Function,
-    default: null,
-  },
+  name: {type: String, required: true},
+  multiple: {type: Boolean, default: false},
+  url: {type: String, default: '/upload'},
+  config: {type: Object, default: () => ({})},
+  errorHandler: {type: Function, default: null},
 })
-
-const uppy = (new Uppy({
-  autoProceed: true,
-  onBeforeUpload: function (files) {
-    emits('beforeUpload', files);
-  },
-  ...props.config,
-  restrictions: {
-    maxNumberOfFiles: props.multiple ? 10 : 1,
-    ...(props.config?.restrictions || {})
-  },
-}))
-
-onMounted(() => {
-  uppy?.use(XHR, {
-    endpoint: props.url,
-    headers: {
-      'X-Requested-With': 'XMLHttpRequest',
-    }
-  })
-})
-
-onBeforeUnmount(() => {
-  uppy?.destroy();
-});
 
 const emits = defineEmits([
-  'update:modelValue',
-  'file-added',
-  'file-removed',
-  'beforeUpload',
-  'progress',
-  'upload',
-  'upload-progress',
-  'upload-error',
-  'upload-success',
-  'upload-pause',
-  'complete',
-  'error',
-  'upload-retry',
-  'upload-stalled',
-  'retry-all',
-  'cancel-all',
+  'update:modelValue', 'file-added', 'file-removed', 'beforeUpload',
+  'progress', 'upload', 'upload-progress', 'upload-error',
+  'upload-success', 'upload-pause', 'complete', 'error',
+  'upload-retry', 'upload-stalled', 'retry-all', 'cancel-all',
   'restriction-failed',
 ])
 
-const form = inject("form", {
-  value: {},
-  errors: {},
-  getID: n => n,
-});
+const inputEl = ref(null);
+const uppy = shallowRef(null);
 
+// Inject form and group contexts
+const form = inject("form", {value: {}, errors: {}, getID: n => n});
 const group = inject("group", null);
 
 const modelValue = computed({
@@ -117,118 +61,118 @@ const modelValue = computed({
   }
 });
 
-const inputEl = ref(null);
-
-uppy?.on('upload', (uploadID, file) => {
-  emits('upload', uploadID, file);
+// ایجاد اینستنس اختصاصی برای هر کامپوننت
+uppy.value = new Uppy({
+  id: props.name, // جلوگیری از تداخل با استفاده از نام پروپ
+  autoProceed: true,
+  ...props.config,
+  restrictions: {
+    maxNumberOfFiles: props.multiple ? 10 : 1,
+    ...(props.config?.restrictions || {})
+  },
 });
 
-uppy?.on('progress', (progress) => {
-  emits('progress', progress);
+uppy.value.on('before-upload', (files) => {
+  emits('beforeUpload', files);
 });
 
-uppy?.on('file-added', (file) => {
-  emits('file-added', file);
-});
-
-uppy?.on('file-removed', (file) => {
-  emits('file-removed', file);
-});
-
-uppy?.on('upload-progress', (file, progress) => {
-  emits('upload-progress', file, progress);
-});
-
-uppy?.on('upload-pause', (file, isPaused) => {
-  emits('upload-pause', file, isPaused);
-});
-
-uppy?.on('complete', (result) => {
-  emits('complete', result);
-});
-
-uppy?.on("upload-success", (file, response) => {
+uppy.value.on('upload-success', (file, response) => {
   const result = response.body ?? response;
-
   if (props.multiple) {
-    modelValue.value = [...(modelValue.value || []), result];
+    const currentValues = Array.isArray(modelValue.value) ? modelValue.value : [];
+    modelValue.value = [...currentValues, result];
   } else {
     modelValue.value = result;
   }
-
   emits('upload-success', file, response);
 });
 
-uppy?.on('upload-error', (file, error, response) => {
-  console.error('upload-error', file, error, response);
-  emits('upload-error', file, error, response);
+uppy.value.on('file-added', (file) => emits('file-added', file));
+uppy.value.on('file-removed', (file) => {
+  if (props.multiple && Array.isArray(modelValue.value)) {
+    const serverResponse = file.response?.body ?? file.response;
+    modelValue.value = modelValue.value.filter(item => {
+      // مقایسه بر اساس شناسه یا کل آبجکت (بسته به ساختار ارسالی سرور شما)
+      // اگر سرور ID برمی‌گرداند: return item.id !== serverResponse.id;
+      // اگر مستقیماً خود آبجکت است:
+      return JSON.stringify(item) !== JSON.stringify(serverResponse);
+    });
+  } else {
+    modelValue.value = null;
+  }
+
+  // بخش حذف از سرور
+  if (file.response) {
+    fetch(props.url, {
+      method: 'DELETE',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(file.response.body ?? file.response),
+    });
+  }
+
+  emits('file-removed', file);
 });
 
-uppy?.on('error', (error) => {
-  emits('error', error);
-});
+uppy.value.on('complete', (result) => emits('complete', result));
+uppy.value.on('error', (error) => emits('error', error));
 
-uppy?.on('upload-retry', (file) => {
-  emits('upload-retry', file);
-});
-
-uppy?.on('upload-stalled', (error, files) => {
-  emits('upload-stalled', error, files);
-});
-
-uppy?.on('retry-all', (files) => {
-  emits('retry-all', files);
-});
-
-uppy?.on('cancel-all', () => {
-  emits('cancel-all');
-});
-
-uppy?.on('restriction-failed', (file, error) => {
+uppy.value.on('restriction-failed', (file, error) => {
   if (props.errorHandler) {
     props.errorHandler(error);
   } else {
-    showError(error);
+    showError(error.message);
   }
   emits('restriction-failed', file, error);
 });
 
+onMounted(() => {
+  uppy.value.use(XHR, {
+    endpoint: props.url,
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest',
+    }
+  });
+});
+
+onBeforeUnmount(() => {
+  if (uppy.value) {
+    uppy.value.destroy();
+  }
+});
+
 function showError(message) {
-  const errorEl = document.createElement('div')
-  errorEl.textContent = message
-  errorEl.className = 'uppy-error'
+  const errorEl = document.createElement('div');
+  errorEl.textContent = message;
+  errorEl.className = 'uppy-error';
 
-  inputEl?._value?.prepend(errorEl);
-  setTimeout(() => {
-    errorEl.remove()
-  }, 3000)
+  if (inputEl.value) {
+    inputEl.value.prepend(errorEl);
+    setTimeout(() => errorEl.remove(), 3000);
+  }
 }
-
 </script>
+
 <style>
+.uppy-reset p{
+  margin-bottom: 0;
+}
 .uppy-file-lists > ul {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.uppy-reset p,
-.uppy-file-lists ul p {
-  margin-bottom: 0;
-}
-
-[dir="rtl"] .uppy-reset .uppy\:tabular-nums {
-  direction: ltr;
-}
-
 .uppy-input-area .uppy-error {
   display: block;
   padding: 5px;
-  background-color: var(--bs-danger-bg-subtle, var(--bs-danger, #de0021));
-  border: 1px solid var(--bs-danger-border-subtle, var(--bs-danger, #de0021));
-  color: var(--bs-danger-text-emphasis, #ffffff);
+  background-color: #f8d7da;
+  border: 1px solid #f5c2c7;
+  color: #842029;
   text-align: center;
-  border-radius: var(--bs-border-radius, 1rem);
+  border-radius: 0.5rem;
   margin-bottom: 5px;
 }
 </style>

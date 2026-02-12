@@ -168,7 +168,32 @@ export const UppyInput: DefineComponent<{
     modelValue: String,
     url: { type: String, default: "/upload" },
     options: { type: Object, default: () => ({}) },
-}, {}, any>;
+},   {},
+    any,
+    {},
+    {},
+    {},
+    {},
+    {
+        'update:modelValue': (value: string) => void,
+        'file-added': (file) => void,
+        'file-removed': (file) => void,
+        'beforeUpload': (files) => void,
+        'progress': (progress) => void,
+        'upload': (uploadID, file) => void,
+        'upload-progress': (file, progress) => void,
+        'upload-error': (file, error, response) => void,
+        'upload-success': (file, response) => void,
+        'upload-pause': (file, isPaused) => void,
+        'complete': (result) => void,
+        'error': (error) => void,
+        'upload-retry': (file) => void,
+        'upload-stalled': (error, files) => void,
+        'retry-all': (files) => void,
+        'cancel-all': () => void,
+        'restriction-failed': (file, error) => void,
+    }
+>;
 export const FileInput: DefineComponent<{}, {}, any>;
 export const SimpleUploader: DefineComponent<{}, {}, any>;
 export const FormContainer: DefineComponent<{}, {}, any>;
