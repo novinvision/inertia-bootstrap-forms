@@ -19,7 +19,6 @@ import {
 import Uppy from '@uppy/core';
 
 import '@uppy/vue/css/style.css';
-import '@uppy/audio/css/style.min.css';
 
 const props = defineProps({
   name: {type: String, required: true},
