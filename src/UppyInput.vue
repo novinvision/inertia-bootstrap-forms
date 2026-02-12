@@ -17,7 +17,6 @@ import {
   UppyContextProvider,
 } from '@uppy/vue';
 import Uppy from '@uppy/core';
-import XHR from '@uppy/xhr-upload';
 
 import '@uppy/vue/css/style.css';
 import '@uppy/audio/css/style.min.css';
@@ -25,6 +24,8 @@ import '@uppy/audio/css/style.min.css';
 const props = defineProps({
   name: {type: String, required: true},
   multiple: {type: Boolean, default: false},
+  useXHR: {type: Boolean, default: true},
+  XHRConfig: {type: Object, default: {}},
   url: {type: String, default: '/upload'},
   config: {type: Object, default: () => ({})},
   errorHandler: {type: Function, default: null},
@@ -129,12 +130,16 @@ uppy.value.on('restriction-failed', (file, error) => {
 });
 
 onMounted(() => {
-  uppy.value.use(XHR, {
-    endpoint: props.url,
-    headers: {
-      'X-Requested-With': 'XMLHttpRequest',
-    }
-  });
+  let XHR;
+  if (props.useXHR) {
+    import('@uppy/xhr-upload').then(module => {
+      XHR = module.default; // چون اکثر پکیج‌ها default export دارند
+      uppy.value.use(XHR, {
+        endpoint: props.url,
+        ...props.XHRConfig
+      });
+    });
+  }
 });
 
 onBeforeUnmount(() => {
@@ -156,9 +161,10 @@ function showError(message) {
 </script>
 
 <style>
-.uppy-reset p{
+.uppy-reset p {
   margin-bottom: 0;
 }
+
 .uppy-file-lists > ul {
   list-style: none;
   padding: 0;
