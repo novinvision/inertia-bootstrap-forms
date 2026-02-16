@@ -135,6 +135,10 @@ onMounted(() => {
       XHR = module.default; // چون اکثر پکیج‌ها default export دارند
       uppy.value.use(XHR, {
         endpoint: props.url,
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'Content-Type': 'application/json',
+        },
         ...props.XHRConfig
       });
     });
