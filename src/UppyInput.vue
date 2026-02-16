@@ -135,9 +135,10 @@ onMounted(() => {
       XHR = module.default; // چون اکثر پکیج‌ها default export دارند
       uppy.value.use(XHR, {
         endpoint: props.url,
+        formData: true,
         headers: {
-          'X-Requested-With': 'XMLHttpRequest',
-          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest' // این هدر به لاراول کمک میکند درخواست را AJAX تشخیص دهد
         },
         ...props.XHRConfig
       });
