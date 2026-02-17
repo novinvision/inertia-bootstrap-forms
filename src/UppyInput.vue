@@ -89,8 +89,9 @@ uppy.value.on('upload-success', (file, response) => {
 
 uppy.value.on('file-added', (file) => emits('file-added', file));
 uppy.value.on('file-removed', (file) => {
+  const serverResponse = file.response?.body ?? file.response;
+
   if (props.multiple && Array.isArray(modelValue.value)) {
-    const serverResponse = file.response?.body ?? file.response;
     modelValue.value = modelValue.value.filter(item => {
       // مقایسه بر اساس شناسه یا کل آبجکت (بسته به ساختار ارسالی سرور شما)
       // اگر سرور ID برمی‌گرداند: return item.id !== serverResponse.id;
@@ -101,30 +102,42 @@ uppy.value.on('file-removed', (file) => {
     modelValue.value = null;
   }
 
-  // بخش حذف از سرور
-  if (file.response) {
+  if (serverResponse) {
     fetch(props.url, {
       method: 'DELETE',
       headers: {
         'X-Requested-With': 'XMLHttpRequest',
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(file.response.body ?? file.response),
+      body: JSON.stringify(serverResponse),
     });
   }
 
   emits('file-removed', file);
 });
 
+uppy.value.on('progress', (progress) => emits('progress', progress));
+uppy.value.on('upload-progress', (file, progress) => emits('upload-progress', file, progress));
+uppy.value.on('upload-pause', (file, progress) => emits('upload-pause', file, progress));
+uppy.value.on('cancel-all', () => emits('cancel-all'));
+uppy.value.on('retry-all', () => emits('retry-all', ));
+uppy.value.on('upload-stalled', (error, files) => emits('upload-stalled', error, files));
+uppy.value.on('upload-retry', (file) => emits('upload-retry', file));
+
 uppy.value.on('complete', (result) => emits('complete', result));
-uppy.value.on('error', (error) => emits('error', error));
+
+uppy.value.on('error', (error) => {
+  emits('error', error)
+});
+
+uppy.value.on('upload-error', (file, error, response) => {
+  const errorMessage = JSON.parse(response.response)?.message ?? error;
+  handleError(errorMessage);
+  emits('upload-error', file, error, response, errorMessage)
+});
 
 uppy.value.on('restriction-failed', (file, error) => {
-  if (props.errorHandler) {
-    props.errorHandler(error);
-  } else {
-    showError(error.message);
-  }
+  handleError(error.message);
   emits('restriction-failed', file, error);
 });
 
@@ -134,11 +147,10 @@ onMounted(() => {
     import('@uppy/xhr-upload').then(module => {
       XHR = module.default; // چون اکثر پکیج‌ها default export دارند
       uppy.value.use(XHR, {
+        method: 'POST',
         endpoint: props.url,
-        formData: true,
         headers: {
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest' // این هدر به لاراول کمک میکند درخواست را AJAX تشخیص دهد
+          'accept': 'application/json',
         },
         ...props.XHRConfig
       });
@@ -151,6 +163,14 @@ onBeforeUnmount(() => {
     uppy.value.destroy();
   }
 });
+
+function handleError(error) {
+  if (props.errorHandler) {
+    props.errorHandler(error);
+  } else if (error) {
+    showError(error);
+  }
+}
 
 function showError(message) {
   const errorEl = document.createElement('div');
