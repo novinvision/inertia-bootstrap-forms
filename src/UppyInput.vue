@@ -216,7 +216,7 @@ function buildRestrictionsCaption(restrictions) {
     const types = allowedFileTypes
         .map(type => type.replace('.', ''))
         .join('، ');
-    parts.push(`فقط فایل با پسوندهای ${types}`);
+    parts.push(`فقط فایل‌های ${types}`);
   }
 
   // تعداد فایل
