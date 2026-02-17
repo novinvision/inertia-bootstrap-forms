@@ -6,6 +6,7 @@
         <Dropzone/>
       </slot>
     </UppyContextProvider>
+    <div class="uppy-input-area--caption small text-body-secondary fst-italic" v-if="restrictionCaption">{{restrictionCaption}}</div>
   </div>
 </template>
 
@@ -28,6 +29,7 @@ const props = defineProps({
   url: {type: String, default: '/upload'},
   config: {type: Object, default: () => ({})},
   errorHandler: {type: Function, default: null},
+  showRestrictionCaption: {type: Boolean, default: true},
 })
 
 const emits = defineEmits([
@@ -38,6 +40,7 @@ const emits = defineEmits([
   'restriction-failed',
 ])
 
+const restrictionCaption = ref(null);
 const inputEl = ref(null);
 const uppy = shallowRef(null);
 
@@ -67,7 +70,7 @@ uppy.value = new Uppy({
   autoProceed: true,
   ...props.config,
   restrictions: {
-    maxNumberOfFiles: props.multiple ? 10 : 1,
+    maxNumberOfFiles: props.multiple ? null : 1,
     ...(props.config?.restrictions || {})
   },
 });
@@ -156,6 +159,12 @@ onMounted(() => {
       });
     });
   }
+
+  if(uppy.value?.opts?.restrictions){
+    console.log(uppy.value?.opts?.restrictions);
+    restrictionCaption.value = buildRestrictionsCaption(uppy.value.opts.restrictions)
+    console.log('restrictionCaption', restrictionCaption.value);
+  }
 });
 
 onBeforeUnmount(() => {
@@ -182,6 +191,62 @@ function showError(message) {
     setTimeout(() => errorEl.remove(), 3000);
   }
 }
+
+function formatBytesToKB(size) {
+  if (!size) return null;
+  return Math.round(size / 1024);
+}
+
+function buildRestrictionsCaption(restrictions) {
+  if (!restrictions) return '';
+
+  const {
+    allowedFileTypes,
+    maxFileSize,
+    minFileSize,
+    maxNumberOfFiles,
+    minNumberOfFiles,
+    maxTotalFileSize,
+  } = restrictions;
+
+  const parts = [];
+
+  // پسوندها
+  if (allowedFileTypes && allowedFileTypes.length) {
+    const types = allowedFileTypes
+        .map(type => type.replace('.', ''))
+        .join('، ');
+    parts.push(`فقط فایل با پسوندهای ${types}`);
+  }
+
+  // تعداد فایل
+  if (maxNumberOfFiles) {
+    parts.push(`امکان انتخاب حداکثر ${maxNumberOfFiles} فایل`);
+  }
+
+  if (minNumberOfFiles) {
+    parts.push(`حداقل ${minNumberOfFiles} فایل نیاز است`);
+  }
+
+  // حجم هر فایل
+  if (maxFileSize) {
+    parts.push(`با حداکثر حجم ${formatBytesToKB(maxFileSize)} کیلوبایت برای هر فایل`);
+  }
+
+  if (minFileSize) {
+    parts.push(`با حداقل حجم ${formatBytesToKB(minFileSize)} کیلوبایت برای هر فایل`);
+  }
+
+  // مجموع حجم
+  if (maxTotalFileSize) {
+    parts.push(`و مجموع حجم کل حداکثر ${formatBytesToKB(maxTotalFileSize)} کیلوبایت`);
+  }
+
+  if (!parts.length) return '';
+
+  return parts.join('، ') + ' مجاز است.';
+}
+
 </script>
 
 <style>

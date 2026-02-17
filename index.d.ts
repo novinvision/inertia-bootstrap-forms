@@ -165,6 +165,10 @@ export const UppyInput: DefineComponent<{
         type: Boolean,
         default: false,
     },
+    showRestrictionCaption: {
+        type: Boolean,
+        default: true,
+    },
     modelValue: String,
     url: { type: String, default: "/upload" },
     options: { type: Object, default: () => ({}) },
