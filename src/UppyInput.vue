@@ -270,4 +270,10 @@ function buildRestrictionsCaption(restrictions) {
   border-radius: 0.5rem;
   margin-bottom: 5px;
 }
+
+.uppy-input-area .uppy-input-area--caption{
+  text-align: center;
+  margin: 5px 0;
+}
+
 </style>
