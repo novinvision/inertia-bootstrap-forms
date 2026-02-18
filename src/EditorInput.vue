@@ -49,11 +49,12 @@ export default defineComponent({
     return {modelValue, form, group};
   },
   emits: ['update:modelValue'],
-  expose: {
+  methods: {
     editor(){
-      return this.refs.editor?.editor;
+      return this.refs.editor.editor;
     }
   },
+  expose: ['editor'],
 })
 </script>
 
