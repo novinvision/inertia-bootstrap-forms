@@ -73,7 +73,7 @@ export default defineComponent({
   <Editor
       ref="editorRef"
       @init="handleInit"
-      @SetContent="setContentInModelValue"
+      @setContent="setContentInModelValue"
       v-model="modelValue"
       class="tiny-editor-input-el"
       :init="{
