@@ -164,9 +164,7 @@ onMounted(() => {
   }
 
   if(uppy.value?.opts?.restrictions){
-    console.log(uppy.value?.opts?.restrictions);
     restrictionCaption.value = buildRestrictionsCaption(uppy.value.opts.restrictions)
-    console.log('restrictionCaption', restrictionCaption.value);
   }
 });
 
