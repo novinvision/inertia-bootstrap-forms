@@ -3,6 +3,7 @@ import Editor from '@tinymce/tinymce-vue';
 import {computed, defineComponent, inject, ref} from "vue";
 
 export default defineComponent({
+  emits: ['update:modelValue', 'setContent'],
   components: {Editor},
   props: {
     name: {
@@ -57,15 +58,8 @@ export default defineComponent({
       }
     });
 
-    const setContentInModelValue = (content, format, paste, selection) => {
-      modelValue.value = content;
-      emit('setContent', content, format, paste, selection)
-      emit('update:modelValue', content)
-    }
-
-    return {modelValue, form, group, editorRef, handleInit, setContentInModelValue};
+    return {modelValue, form, group, editorRef, handleInit};
   },
-  emits: ['update:modelValue', 'setContent'],
 })
 </script>
 
@@ -73,7 +67,6 @@ export default defineComponent({
   <Editor
       ref="editorRef"
       @init="handleInit"
-      @setContent="setContentInModelValue"
       v-model="modelValue"
       class="tiny-editor-input-el"
       :init="{
