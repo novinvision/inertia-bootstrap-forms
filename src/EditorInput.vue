@@ -1,6 +1,6 @@
 <script>
 import Editor from '@tinymce/tinymce-vue';
-import {computed, defineComponent, inject} from "vue";
+import {computed, defineComponent, inject, ref} from "vue";
 
 export default defineComponent({
   components: {Editor},
@@ -24,7 +24,18 @@ export default defineComponent({
       required: false,
     },
   },
-  setup(props) {
+  setup(props, {expose}) {
+    const editorRef = ref(null)
+    const tinyInstance = ref(null)
+
+    const handleInit = (evt, editor) => {
+      tinyInstance.value = editor
+    }
+
+    expose({
+      editor: () => tinyInstance.value
+    })
+
     let form = inject('form', {
       errors: {},
       getID(name) {
@@ -46,21 +57,17 @@ export default defineComponent({
       }
     });
 
-    return {modelValue, form, group};
+    return {modelValue, form, group, editorRef, handleInit,
+    };
   },
   emits: ['update:modelValue'],
-  methods: {
-    editor(){
-      return this.refs.editor.editor;
-    }
-  },
-  expose: ['editor'],
 })
 </script>
 
 <template>
   <Editor
-      ref="editor"
+      ref="editorRef"
+      @init="handleInit"
       v-model="modelValue"
       class="tiny-editor-input-el"
       :init="{
