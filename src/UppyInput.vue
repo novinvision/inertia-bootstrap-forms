@@ -119,7 +119,10 @@ uppy.value.on('file-removed', (file) => {
   emits('file-removed', file);
 });
 
-uppy.value.on('progress', (progress) => emits('progress', progress));
+uppy.value.on('progress', (progress) => {
+  form.value['uploading'] = (progress >= 100 || progress <=0) ? null : progress;
+  emits('progress', progress)
+});
 uppy.value.on('upload-progress', (file, progress) => emits('upload-progress', file, progress));
 uppy.value.on('upload-pause', (file, progress) => emits('upload-pause', file, progress));
 uppy.value.on('cancel-all', () => emits('cancel-all'));

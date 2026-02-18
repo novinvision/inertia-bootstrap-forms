@@ -67,6 +67,7 @@ export default defineComponent({
           processing,
           progress,
           wasSuccessful,
+          uploading,
           recentlySuccessful,
           __rememberable,
           ...cleanedData
