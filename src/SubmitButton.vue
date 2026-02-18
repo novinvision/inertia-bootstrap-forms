@@ -7,14 +7,18 @@ export default defineComponent({
     Spinner
   },
   inject: ['form'],
-  props: {},
+  props: {
+    disabled: {
+      type: Boolean,
+      default: false
+    }
+  },
 })
 </script>
 <template>
   <button
       type="submit"
-      :disabled="form?.processing || form?.uploading"
-      class="btn btn-primary px-3 px-sm-4">
+      :disabled="(disabled || form?.processing || form?.uploading)">
     <Spinner v-if="form?.processing || form?.uploading"/>
     <slot :form="form">
       تایید و ثبت اطلاعات

@@ -223,7 +223,12 @@ export const MultiQuantityInput: DefineComponent<{}, {}, any>;
 export const PasswordInput: DefineComponent<{}, {}, any>;
 export const PersianDatePickerInput: DefineComponent<{}, {}, any>;
 export const QuantityInput: DefineComponent<{}, {}, any>;
-export const SecondarySubmitButton: DefineComponent<{}, {}, any>;
+export const SecondarySubmitButton: DefineComponent<{
+    disabled: {
+        type: Boolean,
+        default: false
+    }
+}, {}, any>;
 export const Select2Input: DefineComponent<{}, {}, any>;
 export const StarRatingInput: DefineComponent<{}, {}, any>;
 export const SubmitButton: DefineComponent<{}, {}, any>;
