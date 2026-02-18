@@ -20,7 +20,6 @@ import MultiQuantityInput from './src/MultiQuantityInput.vue';
 import PasswordInput from './src/PasswordInput.vue';
 import PersianDatePickerInput from './src/PersianDatePickerInput.vue';
 import QuantityInput from './src/QuantityInput.vue';
-import SecondarySubmitButton from './src/SecondarySubmitButton.vue';
 import Select2Input from './src/Select2Input.vue';
 import StarRatingInput from './src/StarRatingInput.vue';
 import SubmitButton from './src/SubmitButton.vue';
@@ -53,7 +52,6 @@ export {
     PasswordInput,
     PersianDatePickerInput,
     QuantityInput,
-    SecondarySubmitButton,
     Select2Input,
     StarRatingInput,
     SubmitButton,
@@ -87,7 +85,6 @@ const Vue3FormComponents = {
     PasswordInput,
     PersianDatePickerInput,
     QuantityInput,
-    SecondarySubmitButton,
     Select2Input,
     StarRatingInput,
     SubmitButton,
@@ -223,15 +220,14 @@ export const MultiQuantityInput: DefineComponent<{}, {}, any>;
 export const PasswordInput: DefineComponent<{}, {}, any>;
 export const PersianDatePickerInput: DefineComponent<{}, {}, any>;
 export const QuantityInput: DefineComponent<{}, {}, any>;
-export const SecondarySubmitButton: DefineComponent<{
+export const Select2Input: DefineComponent<{}, {}, any>;
+export const StarRatingInput: DefineComponent<{}, {}, any>;
+export const SubmitButton: DefineComponent<{
     disabled: {
         type: Boolean,
         default: false
     }
 }, {}, any>;
-export const Select2Input: DefineComponent<{}, {}, any>;
-export const StarRatingInput: DefineComponent<{}, {}, any>;
-export const SubmitButton: DefineComponent<{}, {}, any>;
 export const TelInput: DefineComponent<{}, {}, any>;
 export const TextAreaInput: DefineComponent<{}, {}, any>;
 export const TextInput: DefineComponent<{}, {}, any>;
@@ -296,7 +292,6 @@ declare const Vue3FormComponents: {
     PasswordInput: typeof PasswordInput;
     PersianDatePickerInput: typeof PersianDatePickerInput;
     QuantityInput: typeof QuantityInput;
-    SecondarySubmitButton: typeof SecondarySubmitButton;
     Select2Input: typeof Select2Input;
     StarRatingInput: typeof StarRatingInput;
     SubmitButton: typeof SubmitButton;

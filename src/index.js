@@ -15,7 +15,6 @@ import MobileInput from "./MobileInput.vue";
 import PasswordInput from "./PasswordInput.vue";
 import QuantityInput from "./QuantityInput.vue";
 import MultiQuantityInput from "./MultiQuantityInput.vue";
-import SecondarySubmitButton from "./SecondarySubmitButton.vue";
 import Select2Input from "./Select2Input.vue";
 import StarRatingInput from "./StarRatingInput.vue";
 import SubmitButton from "./SubmitButton.vue";
@@ -49,7 +48,6 @@ export {
     QuantityInput,
     MultiQuantityInput,
     SubmitButton,
-    SecondarySubmitButton,
     StarRatingInput,
     Select2Input,
     FormLabel,
