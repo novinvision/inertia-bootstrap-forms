@@ -24,7 +24,7 @@ export default defineComponent({
       required: false,
     },
   },
-  setup(props, {expose}) {
+  setup(props, {expose, emit}) {
     const editorRef = ref(null)
     const tinyInstance = ref(null)
 
@@ -57,10 +57,15 @@ export default defineComponent({
       }
     });
 
-    return {modelValue, form, group, editorRef, handleInit,
-    };
+    const setContentInModelValue = (content, format, paste, selection) => {
+      modelValue.value = content;
+      emit('setContent', content, format, paste, selection)
+      emit('update:modelValue', content)
+    }
+
+    return {modelValue, form, group, editorRef, handleInit, setContentInModelValue};
   },
-  emits: ['update:modelValue'],
+  emits: ['update:modelValue', 'setContent'],
 })
 </script>
 
@@ -68,6 +73,7 @@ export default defineComponent({
   <Editor
       ref="editorRef"
       @init="handleInit"
+      @SetContent="setContentInModelValue"
       v-model="modelValue"
       class="tiny-editor-input-el"
       :init="{
@@ -89,7 +95,7 @@ textarea.tiny-editor-input-el {
   background-position: center center;
 }
 
-.tox .tox-edit-area::before{
+.tox .tox-edit-area::before {
   display: none;
 }
 </style>
