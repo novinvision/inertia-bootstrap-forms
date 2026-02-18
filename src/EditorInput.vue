@@ -49,11 +49,17 @@ export default defineComponent({
     return {modelValue, form, group};
   },
   emits: ['update:modelValue'],
+  expose: {
+    editor(){
+      return this.refs.editor?.editor;
+    }
+  },
 })
 </script>
 
 <template>
   <Editor
+      ref="editor"
       v-model="modelValue"
       class="tiny-editor-input-el"
       :init="{
