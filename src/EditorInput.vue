@@ -91,4 +91,8 @@ textarea.tiny-editor-input-el {
 .tox .tox-edit-area::before {
   display: none;
 }
+
+.tox .tox-throbber{
+  z-index: var(--bs-backdrop-zindex, 999);
+}
 </style>
