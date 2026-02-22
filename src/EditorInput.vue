@@ -80,6 +80,10 @@ export default defineComponent({
 textarea.tiny-editor-input-el {
   width: 100%;
   min-height: 200px;
+}
+
+textarea.tiny-editor-input-el,
+.tox.tox-tinymce {
   background-color: transparent;
   border: 0;
   outline: none;
@@ -94,5 +98,20 @@ textarea.tiny-editor-input-el {
 
 .tox .tox-throbber{
   z-index: var(--bs-dropdown-zindex, 900) !important;
+}
+
+.tox:not(.tox-tinymce-inline) .tox-editor-header,
+.tox .tox-toolbar-overlord,
+.tox .tox-toolbar, .tox .tox-toolbar__overflow, .tox .tox-toolbar__primary,
+.tox .tox-statusbar{
+  background-color: var(--bs-body-bg, #fff) !important;
+  color: var(--bs-body-color, #000) !important;
+}
+
+.tox .tox-statusbar a,
+.tox .tox-statusbar__path-item,
+.tox .tox-statusbar__wordcount,
+.tox .tox-statusbar{
+  color: var(--bs-secondary-color, #cccc) !important;
 }
 </style>
