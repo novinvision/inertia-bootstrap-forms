@@ -300,7 +300,7 @@
 }
 
 .choices__list--dropdown .choices__item--selectable.is-highlighted, .choices__list[aria-expanded] .choices__item--selectable.is-highlighted {
-    background-color: var(--bs-secondary-bg, #ddd)
+    background-color: var(--bs-tertiary-bg, #ddd)
 }
 
 .choices__list--dropdown .choices__item--selectable.is-highlighted::after, .choices__list[aria-expanded] .choices__item--selectable.is-highlighted::after {
