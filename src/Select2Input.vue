@@ -88,8 +88,20 @@ export default defineComponent({
       return (typeof this.modelValue == 'object') ? Object.values(this.modelValue) : (this.modelValue ? [this.modelValue] : null)
     }
   },
+  watch: {
+    'options': {
+      handler: function (val, old) {
+        setTimeout(() => this.init(), 300);
+      },
+      deep: true
+    }
+  },
   methods: {
     init() {
+      if (this.choices) {
+        this.destroy();
+      }
+
       this.choices = new Choices(this.$refs.input, {
         searchEnabled: (this.searchEnabled || !!this.search?.url),
         searchChoices: (this.searchEnabled && !this.search?.url),
@@ -126,7 +138,7 @@ export default defineComponent({
       );
     },
     async doSearch(searchTerm) {
-      if(!this.search?.url) return;
+      if (!this.search?.url) return;
 
       await this.setLoading();
 

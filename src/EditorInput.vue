@@ -93,6 +93,6 @@ textarea.tiny-editor-input-el {
 }
 
 .tox .tox-throbber{
-  z-index: var(--bs-backdrop-zindex, 999);
+  z-index: var(--bs-dropdown-zindex, 900);
 }
 </style>
