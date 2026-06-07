@@ -11,7 +11,7 @@
 </template>
 
 <script setup>
-import {computed, inject, onBeforeUnmount, onMounted, shallowRef, ref} from 'vue'
+import {computed, inject, onBeforeUnmount, onMounted, shallowRef, ref, watch} from 'vue'
 import {
   Dropzone,
   FilesList,
@@ -43,6 +43,8 @@ const emits = defineEmits([
 const restrictionCaption = ref(null);
 const inputEl = ref(null);
 const uppy = shallowRef(null);
+const isResetting = ref(false);
+const isUnmounting = ref(false);
 
 // Inject form and group contexts
 const form = inject("form", {value: {}, errors: {}, getID: n => n});
@@ -64,9 +66,8 @@ const modelValue = computed({
   }
 });
 
-// ایجاد اینستنس اختصاصی برای هر کامپوننت
 uppy.value = new Uppy({
-  id: props.name, // جلوگیری از تداخل با استفاده از نام پروپ
+  id: props.name,
   autoProceed: true,
   ...props.config,
   restrictions: {
@@ -91,21 +92,19 @@ uppy.value.on('upload-success', (file, response) => {
 });
 
 uppy.value.on('file-added', (file) => emits('file-added', file));
+
 uppy.value.on('file-removed', (file) => {
   const serverResponse = file.response?.body ?? file.response;
 
   if (props.multiple && Array.isArray(modelValue.value)) {
     modelValue.value = modelValue.value.filter(item => {
-      // مقایسه بر اساس شناسه یا کل آبجکت (بسته به ساختار ارسالی سرور شما)
-      // اگر سرور ID برمی‌گرداند: return item.id !== serverResponse.id;
-      // اگر مستقیماً خود آبجکت است:
       return JSON.stringify(item) !== JSON.stringify(serverResponse);
     });
   } else {
     modelValue.value = null;
   }
 
-  if (serverResponse) {
+  if (serverResponse && !isResetting.value && !isUnmounting.value) {
     fetch(props.url, {
       method: 'DELETE',
       headers: {
@@ -120,16 +119,15 @@ uppy.value.on('file-removed', (file) => {
 });
 
 uppy.value.on('progress', (progress) => {
-  form.value['uploading'] = (progress >= 100 || progress <=0) ? null : progress;
+  form.value['uploading'] = (progress >= 100 || progress <= 0) ? null : progress;
   emits('progress', progress)
 });
 uppy.value.on('upload-progress', (file, progress) => emits('upload-progress', file, progress));
 uppy.value.on('upload-pause', (file, progress) => emits('upload-pause', file, progress));
 uppy.value.on('cancel-all', () => emits('cancel-all'));
-uppy.value.on('retry-all', () => emits('retry-all', ));
+uppy.value.on('retry-all', () => emits('retry-all'));
 uppy.value.on('upload-stalled', (error, files) => emits('upload-stalled', error, files));
 uppy.value.on('upload-retry', (file) => emits('upload-retry', file));
-
 uppy.value.on('complete', (result) => emits('complete', result));
 
 uppy.value.on('error', (error) => {
@@ -147,11 +145,16 @@ uppy.value.on('restriction-failed', (file, error) => {
   emits('restriction-failed', file, error);
 });
 
+watch(() => form.value?.wasSuccessful, (newVal, oldVal) => {
+  if (newVal === true && oldVal === false) {
+    resetUppy();
+  }
+});
+
 onMounted(() => {
-  let XHR;
   if (props.useXHR) {
     import('@uppy/xhr-upload').then(module => {
-      XHR = module.default; // چون اکثر پکیج‌ها default export دارند
+      const XHR = module.default;
       uppy.value.use(XHR, {
         method: 'POST',
         endpoint: props.url,
@@ -163,16 +166,26 @@ onMounted(() => {
     });
   }
 
-  if(uppy.value?.opts?.restrictions){
+  if (uppy.value?.opts?.restrictions) {
     restrictionCaption.value = buildRestrictionsCaption(uppy.value.opts.restrictions)
   }
 });
 
 onBeforeUnmount(() => {
+  isUnmounting.value = true;
   if (uppy.value) {
     uppy.value.destroy();
   }
 });
+
+function resetUppy() {
+  if (uppy.value) {
+    isResetting.value = true;
+    uppy.value.cancelAll();
+    isResetting.value = false;
+    modelValue.value = props.multiple ? [] : null;
+  }
+}
 
 function handleError(error) {
   if (props.errorHandler) {
@@ -193,20 +206,13 @@ function showError(message) {
   }
 }
 
-function formatBytesToKB(size) {
-  if (!size) return null;
-  return Math.round(size / 1024);
-}
-
 const niceBytesUnits = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-function niceBytes(x){
+function niceBytes(x) {
   let l = 0, n = parseInt(x, 10) || 0;
-
-  while(n >= 1024 && ++l){
-    n = n/1024;
+  while (n >= 1024 && ++l) {
+    n = n / 1024;
   }
-
-  return(n.toFixed(n < 10 && l > 0 ? 1 : 0) + niceBytesUnits[l]);
+  return (n.toFixed(n < 10 && l > 0 ? 1 : 0) + niceBytesUnits[l]);
 }
 
 function buildRestrictionsCaption(restrictions) {
@@ -223,7 +229,6 @@ function buildRestrictionsCaption(restrictions) {
 
   const parts = [];
 
-  // پسوندها
   if (allowedFileTypes && allowedFileTypes.length) {
     const types = allowedFileTypes
         .map(type => type.replace('.', ''))
@@ -231,7 +236,6 @@ function buildRestrictionsCaption(restrictions) {
     parts.push(`فقط فایل‌های ${types}`);
   }
 
-  // تعداد فایل
   if (maxNumberOfFiles) {
     parts.push(`امکان انتخاب حداکثر ${maxNumberOfFiles} فایل`);
   }
@@ -240,7 +244,6 @@ function buildRestrictionsCaption(restrictions) {
     parts.push(`حداقل ${minNumberOfFiles} فایل نیاز است`);
   }
 
-  // حجم هر فایل
   if (maxFileSize) {
     parts.push(`با حداکثر حجم ${niceBytes(maxFileSize)} برای هر فایل`);
   }
@@ -249,7 +252,6 @@ function buildRestrictionsCaption(restrictions) {
     parts.push(`با حداقل حجم ${niceBytes(minFileSize)} برای هر فایل`);
   }
 
-  // مجموع حجم
   if (maxTotalFileSize) {
     parts.push(`و مجموع حجم کل حداکثر ${niceBytes(maxTotalFileSize)}`);
   }
@@ -258,7 +260,6 @@ function buildRestrictionsCaption(restrictions) {
 
   return parts.join('، ') + ' مجاز است.';
 }
-
 </script>
 
 <style>
@@ -283,9 +284,8 @@ function buildRestrictionsCaption(restrictions) {
   margin-bottom: 5px;
 }
 
-.uppy-input-area .uppy-input-area--caption{
+.uppy-input-area .uppy-input-area--caption {
   text-align: center;
   margin: 5px 0;
 }
-
 </style>
