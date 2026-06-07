@@ -198,6 +198,17 @@ function formatBytesToKB(size) {
   return Math.round(size / 1024);
 }
 
+const niceBytesUnits = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+function niceBytes(x){
+  let l = 0, n = parseInt(x, 10) || 0;
+
+  while(n >= 1024 && ++l){
+    n = n/1024;
+  }
+
+  return(n.toFixed(n < 10 && l > 0 ? 1 : 0) + niceBytesUnits[l]);
+}
+
 function buildRestrictionsCaption(restrictions) {
   if (!restrictions) return '';
 
@@ -231,16 +242,16 @@ function buildRestrictionsCaption(restrictions) {
 
   // حجم هر فایل
   if (maxFileSize) {
-    parts.push(`با حداکثر حجم ${formatBytesToKB(maxFileSize)} کیلوبایت برای هر فایل`);
+    parts.push(`با حداکثر حجم ${niceBytes(maxFileSize)} برای هر فایل`);
   }
 
   if (minFileSize) {
-    parts.push(`با حداقل حجم ${formatBytesToKB(minFileSize)} کیلوبایت برای هر فایل`);
+    parts.push(`با حداقل حجم ${niceBytes(minFileSize)} برای هر فایل`);
   }
 
   // مجموع حجم
   if (maxTotalFileSize) {
-    parts.push(`و مجموع حجم کل حداکثر ${formatBytesToKB(maxTotalFileSize)} کیلوبایت`);
+    parts.push(`و مجموع حجم کل حداکثر ${niceBytes(maxTotalFileSize)}`);
   }
 
   if (!parts.length) return '';
