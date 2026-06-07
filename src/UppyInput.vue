@@ -45,6 +45,7 @@ const inputEl = ref(null);
 const uppy = shallowRef(null);
 const isResetting = ref(false);
 const isUnmounting = ref(false);
+const uploadingFiles = ref(0);
 
 // Inject form and group contexts
 const form = inject("form", {value: {}, errors: {}, getID: n => n});
@@ -76,11 +77,18 @@ uppy.value = new Uppy({
   },
 });
 
+uppy.value.on('upload', () => {
+  uploadingFiles.value = uppy.value.getFiles().filter(f => !f.progress.uploadComplete).length;
+  emits('upload');
+});
+
 uppy.value.on('before-upload', (files) => {
   emits('beforeUpload', files);
 });
 
 uppy.value.on('upload-success', (file, response) => {
+  uploadingFiles.value = Math.max(0, uploadingFiles.value - 1);
+
   const result = response.body ?? response;
   if (props.multiple) {
     const currentValues = Array.isArray(modelValue.value) ? modelValue.value : [];
@@ -119,7 +127,15 @@ uppy.value.on('file-removed', (file) => {
 });
 
 uppy.value.on('progress', (progress) => {
-  form.value['uploading'] = (progress >= 100 || progress <= 0) ? null : progress;
+  if (progress <= 0) {
+    form.value['uploading'] = null;
+  } else if (progress >= 100) {
+    // هنوز منتظر جواب سرور - uploading رو null نکن
+    form.value['uploading'] = uploadingFiles.value > 0 ? 99 : null;
+  } else {
+    form.value['uploading'] = progress;
+  }
+
   emits('progress', progress)
 });
 uppy.value.on('upload-progress', (file, progress) => emits('upload-progress', file, progress));
@@ -128,13 +144,20 @@ uppy.value.on('cancel-all', () => emits('cancel-all'));
 uppy.value.on('retry-all', () => emits('retry-all'));
 uppy.value.on('upload-stalled', (error, files) => emits('upload-stalled', error, files));
 uppy.value.on('upload-retry', (file) => emits('upload-retry', file));
-uppy.value.on('complete', (result) => emits('complete', result));
+
+uppy.value.on('complete', (result) => {
+  uploadingFiles.value = 0;
+  form.value['uploading'] = null;
+  emits('complete', result);
+});
 
 uppy.value.on('error', (error) => {
   emits('error', error)
 });
 
 uppy.value.on('upload-error', (file, error, response) => {
+  uploadingFiles.value = Math.max(0, uploadingFiles.value - 1);
+
   const errorMessage = JSON.parse(response.response)?.message ?? error;
   handleError(errorMessage);
   emits('upload-error', file, error, response, errorMessage)
@@ -236,7 +259,7 @@ function buildRestrictionsCaption(restrictions) {
     parts.push(`فقط فایل‌های ${types}`);
   }
 
-  if (maxNumberOfFiles) {
+  if (maxNumberOfFiles && maxNumberOfFiles > 1) {
     parts.push(`امکان انتخاب حداکثر ${maxNumberOfFiles} فایل`);
   }
 
