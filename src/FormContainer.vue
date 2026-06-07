@@ -25,6 +25,11 @@ export default defineComponent({
       default: {},
       required: false,
     },
+    options: {
+      type: Object,
+      default: {},
+      required: false,
+    },
     submitHandler: {
       type: Function,
       default: null,
@@ -37,6 +42,7 @@ export default defineComponent({
     const form = useForm({
       hasMessage: false,
       successMessage: null,
+      ...props.options,
       ...formData
     });
 
