@@ -30,6 +30,10 @@ export default defineComponent({
       default: {},
       required: false,
     },
+    resetOnSuccess: {
+      type: Boolean,
+      default: true,
+    },
     submitHandler: {
       type: Function,
       default: null,
@@ -136,6 +140,10 @@ export default defineComponent({
             if (data?.props?.message) {
               this.form.hasMessage = true;
               this.form.successMessage = data?.props?.message;
+            }
+
+            if (this.resetOnSuccess) {
+              this.form?.reset();
             }
 
             this.$emit('onSuccess', data);

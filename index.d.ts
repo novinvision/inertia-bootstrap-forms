@@ -200,7 +200,55 @@ export const UppyInput: DefineComponent<{
 >;
 export const FileInput: DefineComponent<{}, {}, any>;
 export const SimpleUploader: DefineComponent<{}, {}, any>;
-export const FormContainer: DefineComponent<{}, {}, any>;
+export const FormContainer: DefineComponent<{
+    url: {
+        type: String,
+        default: '',
+        required: false,
+    },
+    method: {
+        default: 'post'
+    },
+    only: {
+        type: Array,
+        default: [],
+        required: false,
+    },
+    modelValue: {
+        type: Object,
+        default: {},
+        required: false,
+    },
+    options: {
+        type: Object,
+        default: {},
+        required: false,
+    },
+    resetOnSuccess: {
+        type: Boolean,
+        default: true,
+    },
+    submitHandler: {
+        type: Function,
+        default: null,
+        required: false,
+    },
+}, {}, any,
+    {},
+    {},
+    {},
+    {},
+    {
+        'update:modelValue': (data) => void,
+        'submit': (event) => void,
+        'reset': (file) => void,
+        'onStart': () => void,
+        'onFinish': (data) => void,
+        'onSuccess': (data) => void,
+        'onError': (errors) => void,
+        'change': (data) => void,
+    }
+>;
 export const FormLabel: DefineComponent<{}, {}, any>;
 export const GroupControl: DefineComponent<{}, {}, any>;
 export const LocationInput: DefineComponent<{

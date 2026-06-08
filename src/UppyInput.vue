@@ -3,10 +3,10 @@
     <UppyContextProvider :name="'uu' + name" :uppy="uppy">
       <slot :uppy="uppy">
         <FilesList class="uppy-file-lists"/>
-        <Dropzone/>
+        <Dropzone class="uppy-drop-zone"/>
       </slot>
     </UppyContextProvider>
-    <div class="uppy-input-area--caption small text-body-secondary fst-italic" v-if="restrictionCaption">{{restrictionCaption}}</div>
+    <div class="uppy-input-area--caption small text-body-secondary fst-italic" v-if="restrictionCaption">{{ restrictionCaption }}</div>
   </div>
 </template>
 
@@ -192,6 +192,13 @@ onMounted(() => {
   if (uppy.value?.opts?.restrictions) {
     restrictionCaption.value = buildRestrictionsCaption(uppy.value.opts.restrictions)
   }
+
+
+  if (inputEl && uppy.value?.opts?.locale?.strings?.dropzoneText) {
+    inputEl.value?.querySelectorAll('[data-uppy-element="dropzone"]>div>div>p')?.forEach(el => {
+      el.innerHTML = uppy.value?.opts?.locale?.strings?.dropzoneText;
+    });
+  }
 });
 
 onBeforeUnmount(() => {
@@ -230,6 +237,7 @@ function showError(message) {
 }
 
 const niceBytesUnits = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
 function niceBytes(x) {
   let l = 0, n = parseInt(x, 10) || 0;
   while (n >= 1024 && ++l) {
