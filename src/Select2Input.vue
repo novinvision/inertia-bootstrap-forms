@@ -223,7 +223,7 @@ export default defineComponent({
         ref="input">
       <option
           :value="(item.id || item)" v-for="(item, key) in options"
-          :selected="multiple ? (selectedValue || []).includes(item.id || item) : (item.id || item) === modelValue">
+          :selected="multiple ? (selectedValue || []).includes(item.id || item) : (item.id?.toString() || item?.toString()) === modelValue.toString()">
         {{ (label ? item[label] : item.name) || item }}
       </option>
     </select>
