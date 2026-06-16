@@ -101,6 +101,19 @@ export default defineComponent({
     }
   },
   methods: {
+    getKeyFromItem(item) {
+      return ((this.key ? item[this.key] : item?.id ?? item?.name ?? item?.label ?? item?.value) ?? item)?.toString();
+    },
+    getLabelFromItem(item) {
+      return ((this.label ? item[this.label] : item?.name ?? item?.label ?? item?.value) ?? item)
+    },
+    selected(item) {
+      if (this.multiple) {
+        return (this.selectedValue || []).includes(this.getKeyFromItem(item));
+      }
+
+      return (this.getKeyFromItem(item)) === this.modelValue?.toString()
+    },
     init() {
       if (this.choices) {
         this.destroy();
@@ -137,7 +150,7 @@ export default defineComponent({
     async showLoading() {
       this.loading = true;
       await this.choices.setChoices(
-          [{ value: '', label: this.localeTranslates[this.currentLocale]['searchingPlaceholder'] || 'Searching...', disabled: true }],
+          [{value: '', label: this.localeTranslates[this.currentLocale]['searchingPlaceholder'] || 'Searching...', disabled: true}],
           'value',
           'label',
           true  // replaceChoices
@@ -161,8 +174,8 @@ export default defineComponent({
 
         await this.choices.setChoices(
             data.map(item => ({
-              value: ((this.key ? item[this.key] : item?.name ?? item?.label ?? item?.value) ?? item),
-              label: (this.label ? item[this.label] : item?.name ?? item?.label ?? item?.value) ?? item,
+              value: this.getKeyFromItem(item),
+              label: this.getLabelFromItem(item),
             })),
             'value',
             'label',
@@ -176,7 +189,8 @@ export default defineComponent({
           await this.choices.setChoices([], 'value', 'label', true);
         }
       }
-    }  },
+    }
+  },
   mounted() {
     if (this.locale === 'en' && document.dir === 'rtl') {
       this.currentLocale = 'fa';
@@ -219,15 +233,12 @@ export default defineComponent({
         v-model="modelValue"
         class="form-control-select"
         :class="{
-        'form-control-select--loading': loading,
-        'is-invalid': form.errors[name]
-      }"
-        :placeholder="placeholder"
+          'form-control-select--loading': loading,
+          'is-invalid': form.errors[name]
+        }"
         ref="input">
-      <option
-          :value="((key ? item[key] : item?.name ?? item?.label ?? item?.value) ?? item)" v-for="(item, index) in options"
-          :selected="multiple ? (selectedValue || []).includes(item.id || item) : (item?.id?.toString() || item) === modelValue?.toString()">
-        {{ (label ? item[label] : item?.name ?? item?.label ?? item?.value) ?? item }}
+      <option :value="getKeyFromItem(item)" v-for="(item, index) in options" :selected="selected(item)">
+        {{ getLabelFromItem(item) }}
       </option>
     </select>
   </div>
