@@ -279,7 +279,11 @@ export const Select2Input: DefineComponent<{
     modelValue: '',
     label: {
         type: String,
-        default: 'name',
+        default: null,
+    },
+    key: {
+        type: String,
+        default: null,
     },
     placeholder: {
         type: String,
