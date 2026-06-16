@@ -13,7 +13,11 @@ export default defineComponent({
     modelValue: '',
     label: {
       type: String,
-      default: 'name',
+      default: null,
+    },
+    key: {
+      type: String,
+      default: null,
     },
     placeholder: {
       type: String,
@@ -159,7 +163,7 @@ export default defineComponent({
         await this.choices.setChoices(
             data.map(item => ({
               id: item.id,
-              name: item.name,
+              name: item.name || item.label || item.value,
             })),
             'id',
             'name',
@@ -223,9 +227,9 @@ export default defineComponent({
         :placeholder="placeholder"
         ref="input">
       <option
-          :value="(item.id || item)" v-for="(item, key) in options"
+          :value="((key ? item[key] : item?.name ?? item?.label ?? item?.value) ?? item)" v-for="(item, index) in options"
           :selected="multiple ? (selectedValue || []).includes(item.id || item) : (item?.id?.toString() || item) === modelValue?.toString()">
-        {{ (label ? item[label] : item.name) || item }}
+        {{ (label ? item[label] : item?.name ?? item?.label ?? item?.value) ?? item }}
       </option>
     </select>
   </div>
