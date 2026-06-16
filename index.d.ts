@@ -328,6 +328,7 @@ export const Select2Input: DefineComponent<{
 {
     'update:modelValue': (data) => void,
     'search': (event) => void,
+    'searching': (query) => void,
     'change': (file) => void,
     'selected': () => void,
 }

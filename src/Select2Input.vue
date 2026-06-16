@@ -4,7 +4,7 @@ import Choices from 'choices.js';
 import {computed, defineComponent, inject} from "vue";
 
 export default defineComponent({
-  emits: ['update:modelValue', 'search', 'change', 'selected'],
+  emits: ['update:modelValue', 'search', 'searching', 'change', 'selected'],
   props: {
     name: {
       type: String,
@@ -125,27 +125,27 @@ export default defineComponent({
       this.choices.destroy();
     },
     searchHandle(event) {
-      this.doSearch(event.detail.value);
+      this.$emit('search', event)
+      clearTimeout(this.searchDebounceTimer);
+
+      this.showLoading();
+
+      this.searchDebounceTimer = setTimeout(() => {
+        this.doSearch(event.detail.value);
+      }, 400);
     },
-    async setLoading() {
+    async showLoading() {
       this.loading = true;
-      this.choices.clearChoices();
       await this.choices.setChoices(
-          [
-            {
-              value: '',
-              label: this.localeTranslates[this.currentLocale]['searchingPlaceholder'] || 'Searching...',
-            }
-          ],
+          [{ value: '', label: this.localeTranslates[this.currentLocale]['searchingPlaceholder'] || 'Searching...', disabled: true }],
           'value',
           'label',
-          true
+          true  // replaceChoices
       );
     },
     async doSearch(searchTerm) {
+      this.$emit('searching', searchTerm)
       if (!this.search?.url) return;
-
-      await this.setLoading();
 
       if (this.searchController) {
         this.searchController.abort();
@@ -153,33 +153,30 @@ export default defineComponent({
       this.searchController = new AbortController();
 
       try {
-        const res = await fetch(this.search?.url + '?query=' + encodeURIComponent(searchTerm), {
+        const res = await fetch(this.search.url + '?query=' + encodeURIComponent(searchTerm), {
           method: 'POST',
           signal: this.searchController.signal,
         });
         const data = await res.json();
 
-        this.choices.clearChoices();
         await this.choices.setChoices(
             data.map(item => ({
-              id: item.id,
-              name: item.name || item.label || item.value,
+              value: ((this.key ? item[this.key] : item?.name ?? item?.label ?? item?.value) ?? item),
+              label: (this.label ? item[this.label] : item?.name ?? item?.label ?? item?.value) ?? item,
             })),
-            'id',
-            'name',
+            'value',
+            'label',
             true
         );
         this.loading = false;
       } catch (err) {
-        this.loading = false;
-        this.choices.clearChoices();
         if (err.name !== 'AbortError') {
+          this.loading = false;
           console.error(err);
+          await this.choices.setChoices([], 'value', 'label', true);
         }
       }
-
-    }
-  },
+    }  },
   mounted() {
     if (this.locale === 'en' && document.dir === 'rtl') {
       this.currentLocale = 'fa';
@@ -194,6 +191,7 @@ export default defineComponent({
     return {
       choices: null,
       loading: false,
+      searchDebounceTimer: null,
       searchController: null,
       currentLocale: this.locale,
       localeTranslates: {
