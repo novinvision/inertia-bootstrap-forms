@@ -32,7 +32,7 @@ export default defineComponent({
     },
     resetOnSuccess: {
       type: Boolean,
-      default: true,
+      default: false,
     },
     submitHandler: {
       type: Function,
@@ -137,13 +137,13 @@ export default defineComponent({
             this.$emit('onError', errors);
           },
           onSuccess: (data) => {
+            if (this.resetOnSuccess) {
+              this.form?.reset();
+            }
+
             if (data?.props?.message) {
               this.form.hasMessage = true;
               this.form.successMessage = data?.props?.message;
-            }
-
-            if (this.resetOnSuccess) {
-              this.form?.reset();
             }
 
             this.$emit('onSuccess', data);

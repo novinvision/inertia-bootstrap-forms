@@ -226,7 +226,7 @@ export const FormContainer: DefineComponent<{
     },
     resetOnSuccess: {
         type: Boolean,
-        default: true,
+        default: false,
     },
     submitHandler: {
         type: Function,
