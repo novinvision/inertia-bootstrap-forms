@@ -271,7 +271,67 @@ export const MultiQuantityInput: DefineComponent<{}, {}, any>;
 export const PasswordInput: DefineComponent<{}, {}, any>;
 export const PersianDatePickerInput: DefineComponent<{}, {}, any>;
 export const QuantityInput: DefineComponent<{}, {}, any>;
-export const Select2Input: DefineComponent<{}, {}, any>;
+export const Select2Input: DefineComponent<{
+    name: {
+        type: String,
+        required: true,
+    },
+    modelValue: '',
+    label: {
+        type: String,
+        default: 'name',
+    },
+    placeholder: {
+        type: String,
+        default: 'Click to choice',
+    },
+    searchPlaceholder: {
+        type: String,
+        default: 'Type for search...',
+    },
+    multiple: {
+        type: Boolean,
+        default: false,
+    },
+    required: {
+        type: Boolean,
+        default: false,
+    },
+    config: {
+        type: Object,
+        default: {},
+    },
+    locale: {
+        type: String,
+        default: 'en',
+    },
+    options: Array,
+    searchEnabled: {
+        type: Boolean,
+        default: false
+    },
+    hideDropdown: {
+        type: Boolean,
+        default: false
+    },
+    search: {
+        type: Object,
+        default: {
+            url: null,
+        }
+    },
+}, {}, any,
+{},
+{},
+{},
+{},
+{
+    'update:modelValue': (data) => void,
+    'search': (event) => void,
+    'change': (file) => void,
+    'selected': () => void,
+}
+>;
 export const StarRatingInput: DefineComponent<{}, {}, any>;
 export const SubmitButton: DefineComponent<{
     disabled: {

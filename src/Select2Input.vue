@@ -108,6 +108,7 @@ export default defineComponent({
         removeItemButton: true,
         placeholderValue: this.placeholder,
         searchPlaceholderValue: this.placeholder,
+        shouldSort: false,
         itemSelectText: null,
         ...this.localeTranslates[this.currentLocale],
         ...this.config
