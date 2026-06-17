@@ -57,7 +57,7 @@ export default defineComponent({
 <template>
     <div class="form-check">
         <input
-            :name="name + (group ? '_' + group?.name + '-'+group?.groupID : '')"
+            :name="name"
             :id="inputID"
             v-model="modelValue"
             :class="{'is-invalid': form?.errors[name]}"
