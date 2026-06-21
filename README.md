@@ -2,6 +2,24 @@
 
 A Vue 3 component library for building Bootstrap‑styled forms inside **Laravel + Inertia.js** applications. Every input component binds itself automatically to an [Inertia `useForm`](https://inertiajs.com/forms) instance through a `<FormContainer>` wrapper, so you stop wiring up `v-model`, error classes, and field names by hand for every form.
 
+This package has been developed and maintained by **[Novin Vision](https://novinvision.com)** (شرکت **[نوین ویژن](https://novinvision.com)**), a team specialized in **[طراحی سایت](https://novinvision.com)** and **[web design](https://novinvision.com)**.
+
+# About Us
+
+Novin Vision focuses on building modern and practical web solutions for businesses and developers who want a reliable digital presence. The approach is simple: clean design, solid development, and results that can be used in real projects without complexity.
+
+## License
+
+The use of this package is completely free. You are allowed to use it in personal and commercial projects without any restriction or payment.
+
+## About Novin Vision
+
+If you want to learn more or get in touch, you can visit:  
+https://novinvision.com
+
+---
+
+Built and maintained by **Novin Vision**
 ```vue
 <FormContainer v-model="formData" url="/products">
   <div class="row g-3">
