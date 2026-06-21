@@ -269,7 +269,35 @@ export const LocationInput: DefineComponent<{
 export const MobileInput: DefineComponent<{}, {}, any>;
 export const MultiQuantityInput: DefineComponent<{}, {}, any>;
 export const PasswordInput: DefineComponent<{}, {}, any>;
-export const PersianDatePickerInput: DefineComponent<{}, {}, any>;
+export const PersianDatePickerInput: DefineComponent<{
+    name: {
+        type: String,
+        required: true,
+    },
+    calendar: {
+        type: String,
+        default: 'date',
+    },
+    view: {
+        type: String,
+        default: 'date',
+    },
+    min: String,
+    max: String,
+    range: Boolean,
+    locale: {
+        default: 'fa',
+    },
+    format: {
+        type: String,
+        default: 'jYYYY-jMM-jDD',
+    },
+    inputFormat: {
+        type: String,
+        default: null,
+    },
+    placeholder: String,
+}, {}, any>;
 export const QuantityInput: DefineComponent<{}, {}, any>;
 export const Select2Input: DefineComponent<{
     name: {
