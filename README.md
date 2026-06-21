@@ -8,14 +8,12 @@ This package has been developed and maintained by **[Novin Vision](https://novin
 
 Novin Vision focuses on building modern and practical web solutions for businesses and developers who want a reliable digital presence. The approach is simple: clean design, solid development, and results that can be used in real projects without complexity.
 
+If you want to learn more or get in touch, you can visit:  
+https://novinvision.com
+
 ## License
 
 The use of this package is completely free. You are allowed to use it in personal and commercial projects without any restriction or payment.
-
-## About Novin Vision
-
-If you want to learn more or get in touch, you can visit:  
-https://novinvision.com
 
 ---
 
