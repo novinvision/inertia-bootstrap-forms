@@ -1,6 +1,6 @@
 {
     "name": "inertia-bootstrap-forms",
-    "version": "1.0.103",
+    "version": "1.0.104",
     "description": "Create bootstrap forms with inertia and twitter bootstrap",
     "main": "dist/inertia-bootstrap-forms.cjs.js",
     "module": "dist/inertia-bootstrap-forms.es.js",
@@ -24,7 +24,7 @@
         }
     },
     "author": "NovinVision",
-    "license": "ISC",
+    "license": "MIT",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/novinvision/inertia-bootstrap-forms.git"
