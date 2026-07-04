@@ -1,6 +1,8 @@
 <script>
-import Vue3PersianDatetimePicker from 'vue3-persian-datetime-picker';
-import {computed, defineComponent, inject} from "vue";
+import {computed, defineAsyncComponent, defineComponent, inject} from "vue";
+const Vue3PersianDatetimePicker = defineAsyncComponent(() =>
+    import('vue3-persian-datetime-picker')
+);
 
 let _this;
 export default defineComponent({
@@ -74,7 +76,7 @@ export default defineComponent({
   },
   computed: {
     isSsr() {
-      return !window || !document;
+      return typeof window === 'undefined';
     },
     inputID() {
       return this.form.getID(this)
