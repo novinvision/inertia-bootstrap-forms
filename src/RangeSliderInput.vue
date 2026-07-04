@@ -1,6 +1,5 @@
 <script>
 import {computed, defineComponent, inject} from 'vue';
-import RangeSlider from 'svelte-range-slider-pips';
 
 export default defineComponent({
   emits: ['update:modelValue', 'change'],
@@ -68,31 +67,25 @@ export default defineComponent({
   },
   methods: {},
   mounted() {
-    let _this=this;
-    this.rangeSliderEn = new RangeSlider({
-      target: this.$refs.rangeSliderEl,
-      props: {
-        values: this.modelValue,
-        pips: true,
-        spring: true,
-        rangeFloat: true,
-        range: true,
-        formatter: (v) => Intl.NumberFormat().format(v),
-        rangeFormatter: (x, y) => Intl.NumberFormat().format(x) + ' - ' + Intl.NumberFormat().format(y),
-        first: 'label',
-        last: 'label',
-        ...this.options,
-        min: this.min || null,
-        max: this.max || null,
-
-      }
-    }).$on('change', function (e) {
-      _this.$emit('change', e);
-
-      const value = _this.range ? e.detail?.values : e.detail?.value;
-      _this.modelValue = value;
-      _this.$emit('update:modelValue', value);
-    });
+    import('svelte-range-slider-pips').then(({ default: RangeSlider }) => {
+      let _this = this
+      this.rangeSliderEn = new RangeSlider({
+        target: this.$refs.rangeSliderEl,
+        props: {
+          values: this.modelValue,
+          pips: true,
+          // ... بقیه props
+          min: this.min || null,
+          max: this.max || null,
+          ...this.options,
+        }
+      }).$on('change', function (e) {
+        _this.$emit('change', e)
+        const value = _this.range ? e.detail?.values : e.detail?.value
+        _this.modelValue = value
+        _this.$emit('update:modelValue', value)
+      })
+    })
   },
   beforeUnmount() {
   },

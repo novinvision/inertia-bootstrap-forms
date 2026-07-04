@@ -87,10 +87,14 @@ export default defineComponent({
     }
   },
   mounted() {
-    window.addEventListener('click', this.clickOnOutside);
+    if(typeof window !== 'undefined'){
+      window.addEventListener('click', this.clickOnOutside);
+    }
   },
   beforeUnmount() {
-    window.removeEventListener('click', this.clickOnOutside);
+    if(typeof window !== 'undefined'){
+      window.removeEventListener('click', this.clickOnOutside);
+    }
   },
   data() {
     return {

@@ -1,6 +1,5 @@
 <script>
 import './css/from-select.scss';
-import Choices from 'choices.js';
 import {computed, defineComponent, inject} from "vue";
 
 export default defineComponent({
@@ -115,11 +114,17 @@ export default defineComponent({
       return (this.getKeyFromItem(item)) === this.modelValue?.toString()
     },
     init() {
+      if (!this.ChoicesClass) return
+
       if (this.choices) {
         this.destroy();
       }
 
-      this.choices = new Choices(this.$refs.input, {
+      if (this.locale === 'en' && document.dir === 'rtl') {
+        this.currentLocale = 'fa';
+      }
+
+      this.choices = new this.ChoicesClass(this.$refs.input, {
         searchEnabled: (this.searchEnabled || !!this.search?.url),
         searchChoices: (this.searchEnabled && !this.search?.url),
         removeItemButton: true,
@@ -135,7 +140,7 @@ export default defineComponent({
     },
     destroy() {
       this.$refs.input.removeEventListener('search', this.searchHandle);
-      this.choices.destroy();
+      this.choices?.destroy();
     },
     searchHandle(event) {
       this.$emit('search', event)
@@ -192,17 +197,17 @@ export default defineComponent({
     }
   },
   mounted() {
-    if (this.locale === 'en' && document.dir === 'rtl') {
-      this.currentLocale = 'fa';
-    }
-
-    this.init()
+    import('choices.js').then(({ default: Choices }) => {
+      this.ChoicesClass = Choices
+      this.init()
+    })
   },
   beforeUnmount() {
     this.destroy()
   },
   data() {
     return {
+      ChoicesClass: null,
       choices: null,
       loading: false,
       searchDebounceTimer: null,

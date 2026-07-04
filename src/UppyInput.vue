@@ -226,13 +226,15 @@ function handleError(error) {
 }
 
 function showError(message) {
-  const errorEl = document.createElement('div');
-  errorEl.textContent = message;
-  errorEl.className = 'uppy-error';
+  if(typeof window !== 'undefined'){
+    const errorEl = document?.createElement('div');
+    errorEl.textContent = message;
+    errorEl.className = 'uppy-error';
 
-  if (inputEl.value) {
-    inputEl.value.prepend(errorEl);
-    setTimeout(() => errorEl.remove(), 3000);
+    if (inputEl.value) {
+      inputEl.value.prepend(errorEl);
+      setTimeout(() => errorEl.remove(), 3000);
+    }
   }
 }
 
