@@ -120,7 +120,7 @@ export default defineComponent({
         this.destroy();
       }
 
-      if (this.locale === 'en' && document.dir === 'rtl') {
+      if (typeof window !== 'undefined' && this.locale === 'en' && document.dir === 'rtl') {
         this.currentLocale = 'fa';
       }
 

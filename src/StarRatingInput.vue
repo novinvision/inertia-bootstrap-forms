@@ -88,7 +88,7 @@ export default defineComponent({
         }
     },
     mounted() {
-        if (this.$refs.ratingContainer) {
+        if (typeof window !== 'undefined' && this.$refs.ratingContainer) {
             this.isRTL = getComputedStyle(this.$refs.ratingContainer).direction === 'rtl';
         }
     },
