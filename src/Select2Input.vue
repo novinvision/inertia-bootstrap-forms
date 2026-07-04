@@ -235,6 +235,7 @@ export default defineComponent({
     <select
         v-bind="$props"
         :name="name"
+        :id="name"
         v-model="modelValue"
         class="form-control-select"
         :class="{
