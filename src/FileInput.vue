@@ -79,7 +79,11 @@ export default defineComponent({
                     onUploadProgress: progressEvent => _this.calculatePercent(progressEvent, file)
                 }
             ).then(function (res) {
-                _this.addFileToInputValue(file, res)
+              if(res.errors) {
+                throw res;
+              }
+
+              _this.addFileToInputValue(file, res)
             }).catch(function (err) {
                 _this.files.find(item => item.id === file.id)['error'] = (err.response?.data?.message || err.message);
             });

@@ -81,6 +81,10 @@ export default defineComponent({
       )
           .then(response => response.json())
           .then(function (res) {
+            if(res.errors) {
+              throw res;
+            }
+
             _this.addFileToInputValue(file, res)
           }).catch(function (err) {
             console.error('error on uploader', err);
