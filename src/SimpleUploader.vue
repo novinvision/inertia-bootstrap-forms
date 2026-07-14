@@ -59,7 +59,7 @@ export default defineComponent({
       }
     },
     addFileToInputValue(file, res) {
-      this.files.find(item => item.id === file.id).path = res.data.path;
+      this.files.find(item => item.id === file.id).path = res.data?.path || res.path;
 
       this.form[this.name] = this.multiple ? this.files.map(item => item.path) : this.files[0].path;
       this.$emit('update:modelValue', this.form[this.name]);
