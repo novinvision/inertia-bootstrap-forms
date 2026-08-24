@@ -43,6 +43,16 @@ export default defineComponent({
       }
     });
 
+    const persianDigits = '۰۱۲۳۴۵۶۷۸۹';
+    const arabicDigits = '٠١٢٣٤٥٦٧٨٩';
+    function toEnglishDigits(str) {
+      return String(str).replace(/[۰-۹٠-٩]/g, (ch) => {
+        const pIndex = persianDigits.indexOf(ch);
+        if (pIndex !== -1) return pIndex;
+        return arabicDigits.indexOf(ch);
+      });
+    }
+
     const displayValue = computed({
       get() {
         const raw = modelValue.value;
@@ -50,7 +60,7 @@ export default defineComponent({
         return Number(raw).toLocaleString('en-US');
       },
       set(value) {
-        const digitsOnly = String(value).replace(/\D/g, '');
+        const digitsOnly = toEnglishDigits(value).replace(/\D/g, '');
         modelValue.value = digitsOnly === '' ? null : parseInt(digitsOnly, 10);
       }
     });
