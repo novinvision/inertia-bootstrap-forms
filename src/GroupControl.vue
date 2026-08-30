@@ -61,7 +61,7 @@ export default defineComponent({
 })
 </script>
 <template>
-    <div class="form-control-group" :data-group-id="groupID" ref="groupEl">
+    <div class="form-control-group" :data-name="name" :data-group-id="groupID" ref="groupEl">
         <slot/>
     </div>
 </template>
