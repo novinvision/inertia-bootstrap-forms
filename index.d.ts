@@ -209,6 +209,10 @@ export const FormContainer: DefineComponent<{
     method: {
         default: 'post'
     },
+    autoTab: {
+        type: Boolean,
+        default: true,
+    },
     only: {
         type: Array,
         default: [],

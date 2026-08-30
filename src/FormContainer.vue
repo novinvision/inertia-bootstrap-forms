@@ -15,6 +15,10 @@ export default defineComponent({
     method: {
       default: 'post'
     },
+    autoTab: {
+      type: Boolean,
+      default: true,
+    },
     only: {
       type: Array,
       default: [],
@@ -91,8 +95,9 @@ export default defineComponent({
   },
   methods: {
     handleAutoTab(event) {
-      const el = event.target;
+      if (this.formEl?.dataset.autotab !== 'true') return;
 
+      const el = event.target;
       if (!['INPUT', 'TEXTAREA'].includes(el.tagName)) return;
 
       const maxLength = el.maxLength;
@@ -115,7 +120,6 @@ export default defineComponent({
 
       if (next) {
         next.focus();
-
         if (next.tagName !== 'SELECT' && typeof next.select === 'function') {
           next.select();
         }
@@ -192,6 +196,7 @@ export default defineComponent({
   <form ref="formEl"
         :action="url"
         :method="method"
+        :data-autotab="autoTab ? 'true' : ''"
         @input="handleAutoTab"
         @submit.prevent="submit"
         @reset="$emit('reset')"
