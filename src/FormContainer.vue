@@ -90,6 +90,37 @@ export default defineComponent({
     }
   },
   methods: {
+    handleAutoTab(event) {
+      const el = event.target;
+
+      if (!['INPUT', 'TEXTAREA'].includes(el.tagName)) return;
+
+      const maxLength = el.maxLength;
+      if (maxLength > 0 && el.value.length >= maxLength) {
+        this.focusNextField(el);
+      }
+    },
+    focusNextField(current) {
+      const focusable = Array.from(
+          this.formEl.querySelectorAll('input, select, textarea')
+      ).filter(el =>
+          !el.disabled &&
+          el.tabIndex !== -1 &&
+          el.type !== 'hidden' &&
+          el.offsetParent !== null
+      );
+
+      const index = focusable.indexOf(current);
+      const next = focusable[index + 1];
+
+      if (next) {
+        next.focus();
+
+        if (next.tagName !== 'SELECT' && typeof next.select === 'function') {
+          next.select();
+        }
+      }
+    },
     reset() {
       this.form.reset();
     },
@@ -161,6 +192,7 @@ export default defineComponent({
   <form ref="formEl"
         :action="url"
         :method="method"
+        @input="handleAutoTab"
         @submit.prevent="submit"
         @reset="$emit('reset')"
         :class="{'form-processing': form.processing}"
