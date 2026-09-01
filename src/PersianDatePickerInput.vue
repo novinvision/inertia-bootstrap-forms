@@ -107,7 +107,7 @@ export default defineComponent({
         :showNowBtn="true"
         :autoSubmit="true"
         :inputFormat="(inputFormat ? inputFormat : format)"
-        input-class="form-control"
+        input-class="form-control fanumite"
         v-bind="$props"/>
   </template>
 
