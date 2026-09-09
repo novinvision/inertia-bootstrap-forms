@@ -205,7 +205,7 @@ export default defineComponent({
     <slot name="errors">
       <Alert type="danger" v-if="form.hasErrors">
         <ul class="list-unstyled p-0 m-0 fanum">
-          <li v-for="error in form.errors">{{ error }}</li>
+          <li v-for="error in form.errors" v-html="error"></li>
         </ul>
       </Alert>
     </slot>
