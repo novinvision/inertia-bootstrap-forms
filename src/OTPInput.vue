@@ -1,5 +1,5 @@
 <script>
-import {computed, inject, defineComponent, defineEmits, watch} from "vue";
+import {computed, inject, defineComponent} from "vue";
 
 export default defineComponent({
   props: {
@@ -30,8 +30,6 @@ export default defineComponent({
 
   },
   setup(props) {
-    const emits = defineEmits(['completed'])
-
     let form = inject('form', {
       errors: {},
       getID(name) {
@@ -50,12 +48,6 @@ export default defineComponent({
         } else {
           form.value[props.name] = value;
         }
-      }
-    });
-
-    watch(modelValue, (value) => {
-      if (value && value.length >= props.maxLength) {
-        emits('completed', value)
       }
     });
 
