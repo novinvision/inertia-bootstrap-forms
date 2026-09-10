@@ -55,11 +55,38 @@ export default defineComponent({
     });
 
     form.getID = function (el) {
-      if (typeof el === String) {
-        return (formEl.value?.id ? formEl.value?.id + '-' : '') + '-' + el;
+
+      const output = [];
+
+      if(formEl.value?.id) {
+        output.push(formEl.value?.id)
       }
 
-      return (formEl.value?.id ? formEl.value?.id + '-' : '') + ((el.group ? el.group?.name + '-' + el.group?.groupID + '-' : '')) + el.name + (el.value ? '-' + el.value : '');
+      if (typeof el === String) {
+        output.push(el);
+      }
+
+      if (el.group && (el.group.name || el.group.groupID)) {
+        console.log(el.group);
+
+        if(el.group.name){
+          output.push(el.group.name);
+        }
+
+        if(el.group.groupID){
+          output.push(el.group.groupID);
+        }
+      }
+
+      if (el.name) {
+        output.push(el.name);
+      }
+
+      if (el.value) {
+        output.push(el.value);
+      }
+
+      return output.join('-');
     };
 
     return {form, formData, formEl};
@@ -103,6 +130,15 @@ export default defineComponent({
       const maxLength = el.maxLength;
       if (maxLength > 0 && el.value.length >= maxLength) {
         this.focusNextField(el);
+      }
+    },
+    handleAutoSubmitLength(event) {
+      const el = event.target;
+      if (!['INPUT', 'TEXTAREA'].includes(el.tagName)) return;
+
+      const autoSubmitLength = parseInt(el.dataset.autoSubmitLength, 10);
+      if (!isNaN(autoSubmitLength) && el.value.length >= autoSubmitLength) {
+        this.submit();
       }
     },
     focusNextField(current) {
@@ -197,7 +233,7 @@ export default defineComponent({
         :action="url"
         :method="method"
         :data-autotab="autoTab ? 'true' : ''"
-        @input="handleAutoTab"
+        @input="(event) => { handleAutoTab(event); handleAutoSubmitLength(event) }"
         @submit.prevent="submit"
         @reset="$emit('reset')"
         :class="{'form-processing': form.processing}"

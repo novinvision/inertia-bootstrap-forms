@@ -65,7 +65,7 @@ export default defineComponent({
             placeholder: placeHolder
         }"
         v-model="defaultValue"
-        :styleClasses="'form-control' + ((valid === false || form?.errors[name] !== undefined) ? ' is-invalid' : '')"/>
+        :styleClasses="'form-control form-control-tel fanum ' + ((valid === false || form?.errors[name] !== undefined) ? ' is-invalid' : '')"/>
   </div>
 </template>
 <style>

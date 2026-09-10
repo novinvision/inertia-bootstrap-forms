@@ -26,6 +26,7 @@ import SubmitButton from './src/SubmitButton.vue';
 import TelInput from './src/TelInput.vue';
 import TextAreaInput from './src/TextAreaInput.vue';
 import TextInput from './src/TextInput.vue';
+import OTPInput from './src/OTPInput.vue';
 import DropzoneInput from './src/DropzoneInput.vue';
 import { countryCodes } from './src/countryCodes';
 
@@ -58,6 +59,7 @@ export {
     TelInput,
     TextAreaInput,
     TextInput,
+    OTPInput,
     Quantity,
     File,
 };
@@ -91,6 +93,7 @@ const Vue3FormComponents = {
     TelInput,
     TextAreaInput,
     TextInput,
+    OTPInput,
 };
 
 export default Vue3FormComponents;
@@ -379,6 +382,20 @@ export const SubmitButton: DefineComponent<{
 export const TelInput: DefineComponent<{}, {}, any>;
 export const TextAreaInput: DefineComponent<{}, {}, any>;
 export const TextInput: DefineComponent<{}, {}, any>;
+export const OTPInput: DefineComponent<{
+    name: {
+        type: String,
+        required: true,
+    },
+    maxLength: {
+        type: Number,
+        default: 5,
+    },
+    placeholder: {
+        type: String,
+        default: '',
+    },
+}, {}, any>;
 export const RangeSliderInput: DefineComponent<{
     name: {
         type: String,
@@ -446,6 +463,7 @@ declare const Vue3FormComponents: {
     TelInput: typeof TelInput;
     TextAreaInput: typeof TextAreaInput;
     TextInput: typeof TextInput;
+    OTPInput: typeof OTPInput;
     Quantity: typeof QuantityInput;
     RangeSliderInput: typeof RangeSliderInput;
 };

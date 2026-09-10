@@ -79,7 +79,7 @@ export default defineComponent({
         :readonly="readonly"
         :placeholder="placeholder"
         type="tel"
-        class="form-control fanum text-start">
+        class="form-control fanum">
     <InputGroupText class="fanum">{{ unit }}</InputGroupText>
     <slot name="suffix"/>
   </InputGroup>

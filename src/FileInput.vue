@@ -31,7 +31,10 @@ export default defineComponent({
         return {form};
     },
     computed: {
-        allFiles() {
+      inputID() {
+        return this.form?.getID(this);
+      },
+      allFiles() {
             return this.files
         },
     },
@@ -110,6 +113,7 @@ export default defineComponent({
         <input
             ref="input"
             :name="name"
+            :id="inputID"
             :class="{'is-invalid': form?.errors[name] !== undefined}"
             :disabled="form?.processing"
             type="file"

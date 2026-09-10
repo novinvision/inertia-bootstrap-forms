@@ -19,5 +19,5 @@ export default defineComponent({
     <TextInput
         :name="name"
         placeholder="موبایل خود را وارد کنید"
-        type="tel"/>
+        type="tel" class="form-control-mobile fanum"/>
 </template>

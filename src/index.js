@@ -21,6 +21,7 @@ import SubmitButton from "./SubmitButton.vue";
 import TelInput from "./TelInput.vue";
 import TextAreaInput from "./TextAreaInput.vue";
 import TextInput from "./TextInput.vue";
+import OTPInput from "./OTPInput.vue";
 import DropzoneInput from "./DropzoneInput.vue";
 import SimpleUploader from "./SimpleUploader.vue";
 import RangeSliderInput from "./RangeSliderInput.vue";
@@ -54,4 +55,5 @@ export {
     TelInput,
     TextAreaInput,
     TextInput,
+    OTPInput,
 }
