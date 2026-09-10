@@ -67,8 +67,6 @@ export default defineComponent({
       }
 
       if (el.group && (el.group.name || el.group.groupID)) {
-        console.log(el.group);
-
         if(el.group.name){
           output.push(el.group.name);
         }

@@ -35,7 +35,7 @@ export default defineComponent({
     inputEvent(number, phone) {
       this.form[this.name] = phone.number;
       this.valid = phone.valid;
-      console.log('input', number, phone);
+      // console.log('input', number, phone);
     }
   },
   data() {
