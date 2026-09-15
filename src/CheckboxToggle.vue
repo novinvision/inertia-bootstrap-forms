@@ -62,7 +62,7 @@ export default defineComponent({
 })
 </script>
 <template>
-  <label class="form-check-toggle" :class="{'form-check-toggle--active': (selectedValue || []).includes(value)}" :for="inputID">
+  <label class="form-check-toggle" :class="{'form-check-toggle--active': (selectedValue || []).includes(value), 'is-invalid': form?.errors[name]}" :for="inputID">
     <input
         :name="name + (group ? '_' + group?.name + '-'+group?.groupID : '')"
         :id="inputID"
@@ -98,6 +98,10 @@ export default defineComponent({
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
+.form-check-toggle.is-invalid {
+  border-color: var(--bs-form-invalid-border-color);
+}
+
 .form-check-toggle.form-check-toggle--active,
 .form-check-toggle:has(input:checked){
   background-color: var(--bs-warning-bg-subtle, #ffda6a);
@@ -109,5 +113,9 @@ export default defineComponent({
   position: absolute;
   top: 0;
   right: 0;
+}
+
+.form-check-toggle .form-check-input {
+  margin-right: 5px;
 }
 </style>
