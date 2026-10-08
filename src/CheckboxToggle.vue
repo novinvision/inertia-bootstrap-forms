@@ -64,7 +64,7 @@ export default defineComponent({
 <template>
   <label class="form-check-toggle" :class="{'form-check-toggle--active': (selectedValue || []).includes(value), 'is-invalid': form?.errors[name]}" :for="inputID">
     <input
-        :name="name + (group ? '_' + group?.name + '-'+group?.groupID : '')"
+        :name="name"
         :id="inputID"
         v-model="modelValue"
         :class="{'is-invalid': form?.errors[name], 'form-check-toggle--input-hide': hideInput}"

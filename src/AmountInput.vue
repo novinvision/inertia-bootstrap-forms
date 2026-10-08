@@ -12,6 +12,7 @@ export default defineComponent({
     required: Boolean,
     disabled: Boolean,
     readonly: Boolean,
+    inputClass: String,
     placeholder: {
       type: String,
       default: 'عدد را وارد کنید'
@@ -74,12 +75,11 @@ export default defineComponent({
     <input
         :name="name"
         v-model="displayValue"
-        :class="{'is-invalid': form.errors[name]}"
+        :class="['form-control fanum', inputClass, {'is-invalid': form.errors[name]}]"
         :disabled="disabled || form.processing"
         :readonly="readonly"
         :placeholder="placeholder"
-        type="tel"
-        class="form-control fanum">
+        type="tel">
     <InputGroupText class="fanum">{{ unit }}</InputGroupText>
     <slot name="suffix"/>
   </InputGroup>
