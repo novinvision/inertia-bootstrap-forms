@@ -6,6 +6,7 @@ import CaptchaInput from './src/CaptchaInput.vue';
 import CheckboxButtonInput from './src/CheckboxButtonInput.vue';
 import CheckboxInput from './src/CheckboxInput.vue';
 import CheckboxToggle from './src/CheckboxToggle.vue';
+import SwitchInput from './src/SwitchInput.vue';
 import EditorInput from './src/EditorInput.vue';
 import EmailInput from './src/EmailInput.vue';
 import FileInput from './src/FileInput.vue';
@@ -37,6 +38,7 @@ export {
     CheckboxButtonInput,
     CheckboxInput,
     CheckboxToggle,
+    SwitchInput,
     countryCodes,
     EditorInput,
     EmailInput,
@@ -125,6 +127,7 @@ export const CheckboxButtonInput: DefineComponent<{
 }, {}, any>;
 export const CheckboxInput: DefineComponent<{}, {}, any>;
 export const CheckboxToggle: DefineComponent<{}, {}, any>;
+export const SwitchInput: DefineComponent<{}, {}, any>;
 export const countryCodes: any;
 export const EditorInput: DefineComponent<{
     name: {
@@ -442,6 +445,7 @@ declare const Vue3FormComponents: {
     CheckboxButtonInput: typeof CheckboxButtonInput;
     CheckboxInput: typeof CheckboxInput;
     CheckboxToggle: typeof CheckboxToggle;
+    SwitchInput: typeof SwitchInput;
     DropzoneInput: typeof DropzoneInput;
     countryCodes: typeof countryCodes;
     EditorInput: typeof EditorInput;

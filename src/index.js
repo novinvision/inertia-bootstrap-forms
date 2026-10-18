@@ -3,6 +3,7 @@ import CaptchaInput from "./CaptchaInput.vue";
 import CheckboxButtonInput from "./CheckboxButtonInput.vue";
 import CheckboxInput from "./CheckboxInput.vue";
 import CheckboxToggle from "./CheckboxToggle.vue";
+import SwitchInput from "./SwitchInput.vue";
 import PersianDatePickerInput from "./PersianDatePickerInput.vue";
 import EditorInput from "./EditorInput.vue";
 import FileInput from "./FileInput.vue";
@@ -33,6 +34,7 @@ export {
     CheckboxButtonInput,
     CheckboxInput,
     CheckboxToggle,
+    SwitchInput,
     FileInput,
     EmailInput,
     PersianDatePickerInput,
