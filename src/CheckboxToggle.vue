@@ -22,6 +22,11 @@ export default defineComponent({
       default: 'checkbox',
       required: false,
     },
+    disabled: {
+      type: Boolean,
+      default: false,
+      required: false,
+    },
     hideInput: {
       type: Boolean,
       default: false,
@@ -31,7 +36,7 @@ export default defineComponent({
     inputID() {
       return this.form.getID(this) + (this.value || '');
     },
-    selectedValue(){
+    selectedValue() {
       return (this.modelValue && typeof this.modelValue == 'object') ? Object.values(this.modelValue) : (this.modelValue ? [this.modelValue] : null)
     }
   },
@@ -62,13 +67,18 @@ export default defineComponent({
 })
 </script>
 <template>
-  <label class="form-check-toggle" :class="{'form-check-toggle--active': (selectedValue || []).includes(value), 'is-invalid': form?.errors[name]}" :for="inputID">
+  <label class="form-check-toggle"
+         :class="{
+            'form-check-toggle--active': (selectedValue || []).includes(value),
+            'disabled': disabled,
+            'is-invalid': form?.errors[name]
+         }" :for="inputID">
     <input
         :name="name"
         :id="inputID"
         v-model="modelValue"
         :class="{'is-invalid': form?.errors[name], 'form-check-toggle--input-hide': hideInput}"
-        :disabled="form?.processing"
+        :disabled="form?.processing || disabled"
         :type="type"
         :value="value"
         @change="e => $emit('change', e)"
@@ -103,7 +113,7 @@ export default defineComponent({
 }
 
 .form-check-toggle.form-check-toggle--active,
-.form-check-toggle:has(input:checked){
+.form-check-toggle:has(input:checked) {
   background-color: var(--bs-warning-bg-subtle, #ffda6a);
   border-color: var(--bs-warning-border-subtle, var(--bs-alert-border-color, #fff0c3));
 }
