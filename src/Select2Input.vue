@@ -88,7 +88,7 @@ export default defineComponent({
         return this.modelValue;
       }
 
-      return (typeof this.modelValue == 'object') ? Object.values(this.modelValue) : (this.modelValue ? [this.modelValue] : null)
+      return (this.modelValue && typeof this.modelValue == 'object') ? Object.values(this.modelValue) : (this.modelValue ? [this.modelValue] : null)
     }
   },
   watch: {

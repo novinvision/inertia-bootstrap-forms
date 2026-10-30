@@ -32,7 +32,7 @@ export default defineComponent({
       return this.form.getID(this) + (this.value || '');
     },
     selectedValue(){
-      return (typeof this.modelValue == 'object') ? Object.values(this.modelValue) : (this.modelValue ? [this.modelValue] : null)
+      return (this.modelValue && typeof this.modelValue == 'object') ? Object.values(this.modelValue) : (this.modelValue ? [this.modelValue] : null)
     }
   },
   setup(props) {
