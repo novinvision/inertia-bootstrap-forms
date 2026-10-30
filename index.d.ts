@@ -126,7 +126,43 @@ export const CheckboxButtonInput: DefineComponent<{
     },
 }, {}, any>;
 export const CheckboxInput: DefineComponent<{}, {}, any>;
-export const CheckboxToggle: DefineComponent<{}, {}, any>;
+export const CheckboxToggle: DefineComponent<{
+    name: {
+        type: String,
+        required: true,
+    },
+    id: {
+        type: String,
+        default: '',
+        required: false,
+    },
+    value: {
+        type: [String, Number],
+        default: 'yes',
+        required: false,
+    },
+    checked: {
+        type: [Boolean],
+        default: '',
+    },
+    type: {
+        type: String,
+        default: 'checkbox',
+        required: false,
+    },
+    disabled: {
+        type: Boolean,
+        default: false,
+    },
+    readonly: {
+        type: Boolean,
+        default: false,
+    },
+    hideInput: {
+        type: Boolean,
+        default: false,
+    }
+}, {}, any>;
 export const SwitchInput: DefineComponent<{}, {}, any>;
 export const countryCodes: any;
 export const EditorInput: DefineComponent<{
