@@ -141,10 +141,6 @@ export const CheckboxToggle: DefineComponent<{
         default: 'yes',
         required: false,
     },
-    checked: {
-        type: [Boolean],
-        default: '',
-    },
     type: {
         type: String,
         default: 'checkbox',

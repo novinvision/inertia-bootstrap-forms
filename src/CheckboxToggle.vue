@@ -17,10 +17,6 @@ export default defineComponent({
       default: 'yes',
       required: false,
     },
-    checked: {
-      type: [Boolean],
-      default: '',
-    },
     type: {
       type: String,
       default: 'checkbox',
@@ -89,7 +85,6 @@ export default defineComponent({
         :disabled="form?.processing || disabled"
         :type="type"
         :value="value"
-        :checked="checked"
         :readonly="readonly"
         @change="e => $emit('change', e)"
         class="form-check-toggle--input form-check-input">
