@@ -78,7 +78,7 @@ export default defineComponent({
   <label class="form-check-toggle"
          :class="{
             'form-check-toggle--active': (selectedValue || []).includes(value),
-            'disabled': disabled,
+            'disabled': (disabled || readonly),
             'is-invalid': form?.errors[name]
          }" :for="inputID">
     <input
