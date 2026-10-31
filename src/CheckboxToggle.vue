@@ -110,7 +110,7 @@ export default defineComponent({
   appearance: none;
   background-clip: padding-box;
   border: var(--bs-border-width, 1px) solid var(--bs-border-color, #eeeeee);
-  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  transition: background-color ease 0.3s, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
 .form-check-toggle.is-invalid {
