@@ -1,86 +1,91 @@
 <script>
-import {InputGroup, InputGroupText} from 'vue3-bootstrap-components';
-import {computed, defineComponent, inject} from "vue";
+import { computed, defineComponent } from 'vue';
+import { fieldProps, useField } from './composables/useField.js';
+import { useI18n } from './i18n.js';
+import { formatNumber, parseDigits, toEnglishDigits } from './utils/digits.js';
 
+/** Integer input with thousands separators and a unit (Bootstrap 6 `.input-group`). */
 export default defineComponent({
-  components: {InputGroup, InputGroupText},
-  props: {
-    name: {
-      type: String,
-      required: true,
+    name: 'AmountInput',
+    emits: ['update:modelValue', 'change', 'input', 'focus', 'blur'],
+    props: {
+        ...fieldProps,
+        placeholder: { type: String, default: null },
+        unit: { type: String, default: null },
+        min: { type: Number, default: null },
+        max: { type: Number, default: null },
+        inputClass: { type: [String, Array, Object], default: null },
+        size: { type: String, default: null },
+        locale: { type: String, default: null },
     },
-    required: Boolean,
-    disabled: Boolean,
-    readonly: Boolean,
-    inputClass: String,
-    placeholder: {
-      type: String,
-      default: 'عدد را وارد کنید'
-    },
-    unit: {
-      type: String,
-      default: 'عدد'
-    },
-  },
-  setup(props) {
-    let form = inject('form', {
-      errors: {},
-      getID(name) {
-        return name;
-      }
-    });
-    let group = inject('group', {});
+    setup(props, { emit }) {
+        const field = useField(props, emit);
+        const { t } = useI18n(() => props.locale);
 
-    const modelValue = computed({
-      get() {
-        return (group.value && form.value[group.value.name]) ? group.value?.getData(props.name) : form.value[props.name];
-      },
-      set(value) {
-        if (group?.value?.name) {
-          group.value.setData(props.name, value);
-        } else {
-          form.value[props.name] = value;
+        const displayValue = computed(() => formatNumber(field.model.value));
+        const unitText = computed(() => props.unit ?? t('amount.unit'));
+        const sizeClass = computed(() => (props.size ? `form-control-${props.size}` : null));
+
+        function onInput(event) {
+            const el = event.target;
+            const before = el.value.slice(0, el.selectionStart ?? 0);
+            const digitsBefore = toEnglishDigits(before).replace(/\D/g, '').length;
+
+            const parsed = parseDigits(el.value);
+            field.model.value = parsed;
+
+            // Re-format immediately and keep the caret after the same number of digits
+            const formatted = formatNumber(parsed);
+            el.value = formatted;
+            let pos = 0;
+            let seen = 0;
+            while (pos < formatted.length && seen < digitsBefore) {
+                if (/\d/.test(formatted[pos])) seen++;
+                pos++;
+            }
+            if (document.activeElement === el) el.setSelectionRange(pos, pos);
+
+            emit('input', parsed, event);
         }
-      }
-    });
 
-    const persianDigits = '۰۱۲۳۴۵۶۷۸۹';
-    const arabicDigits = '٠١٢٣٤٥٦٧٨٩';
-    function toEnglishDigits(str) {
-      return String(str).replace(/[۰-۹٠-٩]/g, (ch) => {
-        const pIndex = persianDigits.indexOf(ch);
-        if (pIndex !== -1) return pIndex;
-        return arabicDigits.indexOf(ch);
-      });
-    }
+        function clamp(event) {
+            let v = field.model.value;
+            if (v !== null && v !== undefined) {
+                if (props.max !== null && v > props.max) v = props.max;
+                if (props.min !== null && v < props.min) v = props.min;
+                if (v !== field.model.value) field.model.value = v;
+            }
+            field.emitChange(v, event);
+        }
 
-    const displayValue = computed({
-      get() {
-        const raw = modelValue.value;
-        if (raw === null || raw === undefined || raw === '') return '';
-        return Number(raw).toLocaleString('en-US');
-      },
-      set(value) {
-        const digitsOnly = toEnglishDigits(value).replace(/\D/g, '');
-        modelValue.value = digitsOnly === '' ? null : parseInt(digitsOnly, 10);
-      }
-    });
-
-    return {modelValue, displayValue, form, group};
-  },
-})
+        return { ...field, displayValue, unitText, sizeClass, onInput, clamp, t };
+    },
+});
 </script>
+
 <template>
-  <InputGroup>
-    <input
-        :name="name"
-        v-model="displayValue"
-        :class="['form-control fanum', inputClass, {'is-invalid': form.errors[name]}]"
-        :disabled="disabled || form.processing"
-        :readonly="readonly"
-        :placeholder="placeholder"
-        type="tel">
-    <InputGroupText class="fanum">{{ unit }}</InputGroupText>
-    <slot name="suffix"/>
-  </InputGroup>
+    <div class="input-group" :class="{ 'is-invalid': isInvalid }">
+        <slot name="prefix" />
+        <input
+            :name="name"
+            :id="inputId"
+            :value="displayValue"
+            :placeholder="placeholder ?? t('amount.placeholder')"
+            :required="required"
+            :readonly="readonly"
+            :disabled="isDisabled"
+            :aria-invalid="isInvalid || undefined"
+            type="tel"
+            inputmode="numeric"
+            autocomplete="off"
+            class="form-control fanum"
+            :class="[sizeClass, inputClass, { 'is-invalid': isInvalid }]"
+            @input="onInput"
+            @change="clamp"
+            @focus="$emit('focus', $event)"
+            @blur="$emit('blur', $event)"
+        />
+        <span v-if="unitText" class="input-group-text fanum">{{ unitText }}</span>
+        <slot name="suffix" />
+    </div>
 </template>

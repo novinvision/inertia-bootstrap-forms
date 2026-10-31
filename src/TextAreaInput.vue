@@ -1,44 +1,40 @@
 <script>
-import {computed, defineComponent, inject} from "vue";
+import { computed, defineComponent } from 'vue';
+import { fieldProps, useField } from './composables/useField.js';
 
 export default defineComponent({
+    name: 'TextAreaInput',
+    emits: ['update:modelValue', 'change', 'input', 'focus', 'blur'],
     props: {
-        name: {
-            type: String,
-            required: true,
-        },
+        ...fieldProps,
+        rows: { type: [Number, String], default: 3 },
+        placeholder: { type: String, default: null },
+        size: { type: String, default: null },
     },
-    setup(props) {
-        let form = inject('form', {
-            errors: {},
-            getID(name) {
-                return name;
-            }
-        });
-        let group = inject('group', {});
-
-        const modelValue = computed({
-            get() {
-                return (group.value && form.value[group.value.name]) ? group.value?.getData(props.name) : form.value[props.name];
-            },
-            set(value) {
-                if (group?.value?.name) {
-                    group.value.setData(props.name, value);
-                } else {
-                    form.value[props.name] = value;
-                }
-            }
-        });
-
-        return {modelValue, form, group};
+    setup(props, { emit }) {
+        const field = useField(props, emit);
+        const sizeClass = computed(() => (props.size ? `form-control-${props.size}` : null));
+        return { ...field, sizeClass, emit };
     },
-})
+});
 </script>
+
 <template>
     <textarea
+        v-model="model"
         :name="name"
-        v-model="modelValue"
-        :class="{'is-invalid': form?.errors[name] !== undefined}"
-        :disabled="form?.processing"
-        class="form-control"></textarea>
+        :id="inputId"
+        :rows="rows"
+        :placeholder="placeholder"
+        :required="required"
+        :readonly="readonly"
+        :disabled="isDisabled"
+        :aria-invalid="isInvalid || undefined"
+        class="form-control"
+        :class="[sizeClass, { 'is-invalid': isInvalid }]"
+        @input="emit('input', model, $event)"
+        @change="emitChange(model, $event)"
+        @focus="$emit('focus', $event)"
+        @blur="$emit('blur', $event)"
+    ></textarea>
 </template>

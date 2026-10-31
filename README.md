@@ -1,859 +1,467 @@
 # inertia-bootstrap-forms
 
-A Vue 3 component library for building Bootstrap‑styled forms inside **Laravel + Inertia.js** applications. Every input component binds itself automatically to an [Inertia `useForm`](https://inertiajs.com/forms) instance through a `<FormContainer>` wrapper, so you stop wiring up `v-model`, error classes, and field names by hand for every form.
+> **English** · [فارسی](./README.fa.md)
 
-This package has been developed and maintained by **[Novin Vision](https://novinvision.com)** (شرکت **[نوین ویژن](https://novinvision.com)**), a team specialized in **[طراحی سایت](https://novinvision.com)** and **[web design](https://novinvision.com)**.
+Bootstrap **6** form components for **Vue 3 + Inertia.js** (Laravel). Every field binds itself to one
+[Inertia `useForm`](https://inertiajs.com/forms) instance through a `<FormContainer>`, and the value of **every field
+lives in the container's single `v-model`** — no per-field `v-model`, error classes or ids to wire by hand.
 
-# About Us
-
-Novin Vision focuses on building modern and practical web solutions for businesses and developers who want a reliable digital presence. The approach is simple: clean design, solid development, and results that can be used in real projects without complexity.
-
-If you want to learn more or get in touch, you can visit:  
-https://novinvision.com
-
-## License
-
-The use of this package is completely free. You are allowed to use it in personal and commercial projects without any restriction or payment.
-
----
-
-Built and maintained by **Novin Vision**
 ```vue
-<FormContainer v-model="formData" url="/products">
-  <div class="row g-3">
-    <div class="col-12 col-sm-6">
-      <FormLabel>Name</FormLabel>
-      <TextInput name="name" />
-    </div>
-    <div class="col-12 col-sm-3">
-      <FormLabel>Alias</FormLabel>
-      <TextInput name="slug" />
-    </div>
-    <div class="col-12 col-sm-3">
-      <FormLabel>Status</FormLabel>
-      <Select2Input name="status" :options="[
-        { id: 'active', name: 'Active' },
-        { id: 'disable', name: 'Disabled' },
-        { id: 'draft', name: 'Draft' }
-      ]" />
-    </div>
-    <div class="col-12 col-sm-6">
-      <FormLabel>New Image</FormLabel>
-      <FileInput name="new_thumbnail" />
-    </div>
-    <div class="col-12">
-      <FormLabel>Description</FormLabel>
-      <EditorInput name="description" />
-    </div>
-    <div class="col-12 text-end">
-      <SubmitButton />
-    </div>
-  </div>
+<FormContainer v-model="formData" url="/tickets">
+    <FormField name="priority" label="Priority">
+        <ComboboxInput name="priority" :options="priorities" />
+    </FormField>
+
+    <SubmitButton>
+        Save
+        <Icon icon="arrow-left" class="align-middle ms-1" />
+    </SubmitButton>
 </FormContainer>
 ```
 
----
+Built and maintained by **[Novin Vision](https://novinvision.com)** (نوین ویژن). Free for personal and commercial use (MIT).
 
-## Table of Contents
-
-1. [Requirements](#requirements)
-2. [Installation](#installation)
-3. [Global Setup (required helpers)](#global-setup-required-helpers)
-4. [Core Concepts](#core-concepts)
-5. [Component Reference](#component-reference)
-   - [FormContainer](#formcontainer)
-   - [FormLabel](#formlabel)
-   - [GroupControl](#groupcontrol)
-   - [TextInput](#textinput)
-   - [TextAreaInput](#textareainput)
-   - [EmailInput](#emailinput)
-   - [PasswordInput](#passwordinput)
-   - [MobileInput](#mobileinput)
-   - [TelInput](#telinput)
-   - [AmountInput](#amountinput)
-   - [QuantityInput](#quantityinput)
-   - [MultiQuantityInput](#multiquantityinput)
-   - [CheckboxInput](#checkboxinput)
-   - [CheckboxButtonInput](#checkboxbuttoninput)
-   - [CheckboxToggle](#checkboxtoggle)
-   - [Select2Input](#select2input)
-   - [PersianDatePickerInput](#persiandatepickerinput)
-   - [RangeSliderInput](#rangesliderinput)
-   - [StarRatingInput](#starratinginput)
-   - [CaptchaInput](#captchainput)
-   - [EditorInput](#editorinput)
-   - [LocationInput](#locationinput)
-   - [FileInput](#fileinput)
-   - [SimpleUploader](#simpleuploader)
-   - [DropzoneInput](#dropzoneinput)
-   - [UppyInput](#uppyinput)
-   - [SubmitButton](#submitbutton)
-6. [Upload Endpoint Contract (backend)](#upload-endpoint-contract-backend)
-7. [Styling & Theming](#styling--theming)
-8. [TypeScript](#typescript)
-9. [Known Limitations](#known-limitations)
+> **v3 is a rewrite for Bootstrap 6.** Bootstrap 5 projects should stay on `inertia-bootstrap-forms@2`.
+> See [Migrating from v2](#migrating-from-v2).
 
 ---
+
+## Table of contents
+
+1. [What's new in v3](#whats-new-in-v3)
+2. [Requirements](#requirements)
+3. [Installation](#installation)
+4. [Core concepts](#core-concepts)
+5. [Component reference](#component-reference)
+6. [Upload endpoint contract](#upload-endpoint-contract)
+7. [Internationalisation](#internationalisation)
+8. [Lifecycle, SSR and cleanup](#lifecycle-ssr-and-cleanup)
+9. [Composables](#composables)
+10. [Migrating from v2](#migrating-from-v2)
+11. [Notes and known limitations](#notes-and-known-limitations)
+12. [Development](#development)
+
+---
+
+## What's new in v3
+
+- Rewritten for **Bootstrap 6** markup: `.check` / `.radio` / `.switch`, `.form-field`, `.btn-solid.theme-*`, `.menu`, `.alert.theme-*`, `.form-ghost`, …
+- **New components:** `ComboboxInput` (replaces `Select2Input` / choices.js), `ChipsInput`, `OTPInput` (Bootstrap OTP), `RangeInput`, `FormAdornInput`, `FormField`.
+- **Zero styles shipped.** No CSS file, no `<style>` blocks. Import Bootstrap 6 in your app.
+- Every field emits Vue events (`update:modelValue`, `change`, plus component specific ones) and exposes all the props it needs.
+- Bootstrap JavaScript plugins (Combobox, Chips, OTP, Range, Menu) are loaded lazily **on mount** and **disposed on unmount**. Listeners, timers, XHR requests, Dropzone and Uppy instances are released too.
+- SSR-safe: nothing touches `window` / `document` at import time or during server rendering.
+- No more hidden global requirements (`window.axios`, `maska`, `vue3-bootstrap-components`, FontAwesome).
 
 ## Requirements
 
-The package itself only ships the Vue components (plus a few smaller libraries that are already bundled into `dist/`). The following must exist in the **host** application:
-
-| Requirement | Why |
+| Requirement | Notes |
 |---|---|
-| Vue `^3.0` | The components are plain Vue 3 SFCs. |
-| `@inertiajs/vue3` `>2.0` | `FormContainer` calls Inertia's `useForm()` internally. |
-| Bootstrap 5 CSS (`.form-control`, `.btn`, `.input-group`, `.form-check`, CSS variables like `--bs-*`, etc.) | All markup/classes assume Bootstrap 5 is loaded. |
-| `dropzone` `^6.0.0-beta.2` | Only needed if you use `<DropzoneInput>`. |
-| `@tinymce/tinymce-vue` | Only needed if you use `<EditorInput>` (TinyMCE). |
-| `@vue-leaflet/vue-leaflet` + `leaflet` | Only needed if you use `<LocationInput>`. |
-| `vue-tel-input` | Only needed if you use `<TelInput>`. |
-| `vue3-persian-datetime-picker` | Only needed if you use `<PersianDatePickerInput>`. |
-| `maska` | Only needed if you use `<AmountInput>` or `<QuantityInput>` (number masking). |
-| `axios` available globally as `window.axios` | Used internally by `<FileInput>`. Laravel's default `resources/js/bootstrap.js` already does this (`window.axios = require('axios')`). |
+| `vue` ≥ 3.3 | |
+| `@inertiajs/vue3` ≥ 2.0 | `FormContainer` uses `useForm()` |
+| `bootstrap` ^6.0.0-alpha.1 | **CSS** is required. The JS plugins are imported by this package on demand. |
+| `@floating-ui/dom` | Peer dependency of Bootstrap 6 menus (needed by Combobox / MultiQuantityInput) |
+| `dropzone` ^6 | Only for `DropzoneInput` |
+| `leaflet` | Only for `LocationInput` |
 
-The following libraries are **already bundled inside `dist/`** and do **not** need to be installed separately: `vue3-bootstrap-components`, `choices.js`, `svelte-range-slider-pips`, `@uppy/core`, `@uppy/vue`, `@uppy/xhr-upload`.
-
----
+Third-party widgets are regular dependencies of this package and are loaded lazily: `vue-tel-input`,
+`vue3-persian-datetime-picker`, `@tinymce/tinymce-vue`, `@vue-leaflet/vue-leaflet`, `@uppy/*`.
 
 ## Installation
 
-### 1. Install the package
-
-This package isn't necessarily on the public npm registry, so install it however it was distributed to you:
-
 ```bash
-# from a private/internal npm registry
-npm install inertia-bootstrap-forms
-
-# from a Git repository
-npm install git+https://github.com/novinvision/inertia-bootstrap-forms.git
-
-# from a local folder or tarball
-npm install file:../path/to/inertia-bootstrap-forms
+npm install inertia-bootstrap-forms bootstrap@next @floating-ui/dom
+# optional
+npm install dropzone leaflet
 ```
 
-### 2. Install the peer libraries you actually need
+### Import the styles in your application
 
-You don't have to install all of them — only the ones backing the components you use:
-
-```bash
-npm install @inertiajs/vue3 dropzone @tinymce/tinymce-vue \
-  @vue-leaflet/vue-leaflet leaflet vue-tel-input \
-  vue3-persian-datetime-picker maska
-```
-
-### 3. Import the package styles
+The package does not ship any CSS. Import Bootstrap 6 (compiled CSS or your own Sass build) and — only for the
+widgets you use — the CSS of the third-party libraries:
 
 ```js
 // resources/js/app.js
-import 'inertia-bootstrap-forms/dist/style.css';
+import 'bootstrap/dist/css/bootstrap.min.css';          // Bootstrap 6 (required)
+
+import 'vue-tel-input/vue-tel-input.css';               // TelInput
+import 'leaflet/dist/leaflet.css';                      // LocationInput
+import 'dropzone/dist/basic.css';                       // DropzoneInput
+import 'dropzone/dist/dropzone.css';                    // DropzoneInput
+import '@uppy/vue/css/style.css';                       // UppyInput
 ```
 
-### 4. Register the components
-
-You can either import components individually (recommended, keeps the bundle small):
-
-```vue
-<script setup>
-import { FormContainer, FormLabel, TextInput, SubmitButton } from 'inertia-bootstrap-forms';
-</script>
-```
-
-…or register everything globally once, in `app.js`:
+You do **not** need to import Bootstrap's JavaScript: the plugins used by the components are loaded by the package.
+If your application already bundles Bootstrap and you want a single copy, hand the classes over:
 
 ```js
-import { createApp, h } from 'vue';
-import { createInertiaApp } from '@inertiajs/vue3';
-import * as InertiaBootstrapForms from 'inertia-bootstrap-forms';
-import 'inertia-bootstrap-forms/dist/style.css';
+import { Combobox, Chips, OtpInput, Range, Menu } from 'bootstrap';
+import { configureBootstrap } from 'inertia-bootstrap-forms';
+
+configureBootstrap({ Combobox, Chips, OtpInput, Range, Menu });
+```
+
+### Registering components
+
+Import what you need, or install the plugin to register everything globally:
+
+```js
+import InertiaBootstrapForms from 'inertia-bootstrap-forms';
 
 createInertiaApp({
-  resolve: name => resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob('./Pages/**/*.vue')),
-  setup({ el, App, props, plugin }) {
-    const app = createApp({ render: () => h(App, props) }).use(plugin);
-
-    Object.entries(InertiaBootstrapForms).forEach(([name, component]) => {
-      if (name !== 'default') app.component(name, component);
-    });
-
-    app.mount(el);
-  },
+    setup({ el, App, props, plugin }) {
+        createApp({ render: () => h(App, props) })
+            .use(plugin)
+            .use(InertiaBootstrapForms, { locale: 'en' }) // options are optional
+            .mount(el);
+    },
 });
 ```
 
+## Core concepts
+
+### One `v-model` for the whole form
+
+```vue
+<script setup>
+import { ref } from 'vue';
+import { FormContainer, TextInput, ComboboxInput, SwitchInput, SubmitButton } from 'inertia-bootstrap-forms';
+
+const formData = ref({ name: '', status: 'draft', published: false });
+</script>
+
+<template>
+    <FormContainer v-model="formData" url="/products" @success="onSaved">
+        <TextInput name="name" />
+        <ComboboxInput name="status" :options="['draft', 'active']" />
+        <SwitchInput name="published" label="Published" />
+        <SubmitButton />
+    </FormContainer>
+</template>
+```
+
+* `name` is the key inside `formData`. The object does **not** have to declare every field up front: keys that are missing are added to `formData` as soon as the field is used, and they are submitted and reset with the rest. Typing into a field updates `formData`; changing `formData` from the outside updates the fields.
+* Server-side validation errors (`form.errors`) are matched by `name` and turn the control `.is-invalid`.
+* Fields are disabled while the form is `processing`.
+* Persian / Arabic digits are converted to English digits before submit (`:normalize-digits="false"` to disable). `File` objects are never touched.
+* Values are still **not limited to the container**: a field used *outside* a `FormContainer` works with its own `v-model`.
+
+```vue
+<TextInput v-model="title" />   <!-- standalone -->
+```
+
+### Events
+
+Every component declares its emits:
+
+| Event | Payload | Emitted by |
+|---|---|---|
+| `update:modelValue` | `value` | all fields |
+| `change` | `value, event?` | all fields |
+| `input` | `value, event` | text-like fields, OTP, range |
+| `focus` / `blur` | `event` | text-like fields, checkbox family, range, chips |
+| component specific | see [reference](#component-reference) | combobox, chips, OTP, uploaders … |
+
+Native listeners that are not declared (`@keydown`, `@paste`, …) fall through to the underlying `<input>` on single-root
+components (`TextInput`, `TextAreaInput`, `EmailInput`, `MobileInput`, `PasswordInput`, `FormAdornInput`).
+
+### Props shared by every field
+
+| Prop | Type | Description |
+|---|---|---|
+| `name` | `string` | Key in the form's v-model (also used for error lookup) |
+| `modelValue` | any | Standalone `v-model` (ignored inside a `FormContainer`) |
+| `id` | `string` | Override the generated id (auto-linked to `FormField` labels) |
+| `disabled` | `boolean` | Disable the control |
+| `readonly` | `boolean` | Read-only (or non-interactive for controls without native readonly) |
+| `required` | `boolean` | Native `required` |
+| `invalid` | `boolean` | Force invalid state; default follows server errors |
+
+### Grouped / repeated values
+
+```vue
+<GroupControl name="items" :index="0">
+    <TextInput name="title" />       <!-- items[0].title -->
+    <QuantityInput name="qty" />     <!-- items[0].qty   -->
+</GroupControl>
+```
+
+`index` is optional — without it the position among sibling `.form-control-group` elements is used. Error keys such as
+`items.0.title` are resolved automatically.
+
 ---
 
-## Global Setup (required helpers)
+## Component reference
 
-Two components (`AmountInput`, `QuantityInput`) rely on globals that this package does **not** provide. You need to register them yourself in `app.js` before those components will work.
+### Form structure
 
-### `v-maska` directive
+#### `FormContainer`
 
-`AmountInput` and `QuantityInput` use `v-maska` (from the [`maska`](https://www.npmjs.com/package/maska) package) to format numbers with thousand separators while typing.
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `modelValue` | `object` | `{}` | The form data (`v-model`) |
+| `url` | `string` | `''` | Submit URL |
+| `method` | `string` | `'post'` | HTTP method |
+| `only` | `string[]` | `[]` | Inertia `only` option |
+| `options` | `object` | `{}` | Extra fields that are not part of `modelValue` |
+| `visitOptions` | `object` | `{}` | Extra Inertia visit options (`preserveScroll`, `headers`, callbacks…) |
+| `autoTab` | `boolean` | `true` | Focus next field when `maxlength` is reached |
+| `resetOnSuccess` | `boolean` | `false` | Reset the form after a successful submit |
+| `submitHandler` | `(event, form) => any` | `null` | Replace the default submit |
+| `normalizeDigits` | `boolean` | `true` | Persian/Arabic → English digits on submit |
+| `validate` | `boolean` | `false` | Enable Bootstrap 6 client-side validation (`data-bs-validate`) |
+| `htmlMessages` | `boolean` | `false` | Render server messages as HTML (trusted content only) |
+| `hideAlerts` | `boolean` | `false` | Hide the built-in error / success alerts |
+
+Events: `update:modelValue`, `change`, `submit`, `reset`, `before`, `start`, `progress`, `success`, `error`, `cancel`, `finish`
+(legacy `onStart`, `onFinish`, `onSuccess`, `onError` are still emitted).
+Slots: default `{ form, submit, reset }`, `errors { errors, form }`, `message { message }`.
+Exposed: `submit()`, `reset()`, `form`, `el`.
+
+A `message` prop returned by the server in the Inertia page props is shown as a success alert.
+
+#### `FormField`
+
+Bootstrap 6 `.form-field`: label + control + help + validation feedback. The generated `id` is injected into the child control and the label.
+
+| Prop | Description |
+|---|---|
+| `name` | Field key — used to read the server error |
+| `label`, `help` | Texts |
+| `error` | Override the error text |
+| `required` | Adds the required mark to the label |
+| `id` | Override the generated id |
+
+Slots: default, `label`, `help`, `error`.
+
+```vue
+<FormField name="email" label="Email" help="We never share it" required>
+    <EmailInput name="email" />
+</FormField>
+```
+
+#### `FormLabel`, `GroupControl`, `SubmitButton`
+
+* `FormLabel` – `for`, `required`. Detects its control automatically inside `FormField` or from the next element.
+* `GroupControl` – `name` (required), `index`.
+* `SubmitButton` – `variant` (`solid`), `theme` (`primary`), `loading`, `disabled`, `locale`. Renders `class="btn-solid theme-primary"`; pass `:variant="null"` to bring your own classes. Shows a spinner while `form.processing` / `form.uploading`. Emits `click`. Slots: default, `progress`.
+
+### Text-like inputs
+
+| Component | Extra props | Notes |
+|---|---|---|
+| `TextInput` | `type`, `placeholder`, `size` (`sm`/`lg`) | `.form-control` |
+| `TextAreaInput` | `rows`, `placeholder`, `size` | |
+| `EmailInput` | `placeholder`, `locale` | `type="email"`; all `TextInput` props forwarded |
+| `MobileInput` | `placeholder`, `locale` | `type="tel"` |
+| `PasswordInput` | `placeholder`, `toggle`, `locale` | `toggle` adds a show / hide button (form-adorn); event `toggle` |
+| `TelInput` | `placeholder`, `defaultCountry` (`ir`), `preferredCountries`, `mode`, `validCharactersOnly`, `validate`, `dropdownOptions`, `inputOptions` | `vue-tel-input`; stores the international number; events `validate`, `country-changed` |
+| `FormAdornInput` | `type`, `placeholder`, `startText`, `endText`, `size` | Bootstrap 6 `.form-adorn`. Slots `start`, `end` |
+| `AmountInput` | `placeholder`, `unit`, `min`, `max`, `size`, `locale` | Integer with thousands separators, stores a `number` |
+| `QuantityInput` | `min` (0), `max`, `step` (1), `unit`, `locale` | Stepper; events `increment`, `decrement` |
+| `MultiQuantityInput` | `options`, `min`, `max`, `totalMin`, `totalMax`, `unit`, `placement`, `locale` | Bootstrap Menu with one stepper per option; value `{ 0: 2, 1: 1 }` |
+
+```vue
+<FormAdornInput name="website" start-text="https://">
+    <template #end><span class="form-adorn-icon"><svg …/></span></template>
+</FormAdornInput>
+```
+
+### Choice inputs
+
+| Component | Extra props |
+|---|---|
+| `CheckboxInput` | `type` (`checkbox`/`radio`), `value`, `trueValue`, `falseValue`, `checked`, `indeterminate`, `label` |
+| `SwitchInput` | `value`, `trueValue`, `falseValue`, `checked`, `label` |
+| `CheckboxButtonInput` | `type` (`radio`), `value`, `variant` (`outline`), `theme` (`primary`), `checked` — Bootstrap `.btn-check` |
+| `CheckboxToggle` | `type`, `value`, `checked`, `hideInput` — selectable card (`.form-field-card`) |
+
+Model rules follow Vue's native `v-model`: an **array** model collects the checked `value`s, a **radio** stores the selected `value`, a single checkbox stores `trueValue` / `falseValue` (default `true` / `false`).
+
+```vue
+<CheckboxInput name="roles" value="admin" label="Admin" />
+<CheckboxInput name="roles" value="editor" label="Editor" />     <!-- roles: ['admin','editor'] -->
+<CheckboxInput name="plan" type="radio" value="pro" label="Pro" />
+```
+
+### `ComboboxInput` (Bootstrap 6 Combobox)
+
+Replaces `Select2Input` (choices.js). `Select2Input` is still exported as an alias.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `options` | `Array` | `[]` | Strings, numbers or objects `{ id \| value, name \| label, description, disabled }` |
+| `valueKey` / `labelKey` | `string` | auto | Property names of option objects (`label` is a legacy alias of `labelKey`) |
+| `descriptionKey` | `string` | `'description'` | Secondary text of an option |
+| `multiple` | `boolean` | `false` | Multiple selection (array model) |
+| `placeholder` | `string` | i18n | |
+| `searchEnabled` | `boolean` | `false` | Client-side search box |
+| `search` | `object` | `{ url: null }` | **Remote search**: `{ url, method='POST', param='query', debounce=400, minChars=0, headers, resultsKey='data' }` |
+| `clearable` | `boolean` | `false` | Adds an entry that clears a single select |
+| `clearText`, `noResultsText`, `loadingText`, `searchPlaceholder`, `selectedText` | `string` | i18n | `selectedText` supports `{count}` |
+| `placement` | `string` | `'bottom-start'` | Floating UI placement |
+| `size`, `hideDropdown`, `searchNormalize`, `locale` | | | |
+
+Events: `update:modelValue`, `change`, `selected` (option(s)), `clear`, `search`, `search-success`, `search-error`, `show`, `shown`, `hide`, `hidden`.
+Exposed: `show()`, `hide()`, `toggle()`, `clear()`, `focus()`.
+
+```vue
+<ComboboxInput name="priority" :options="[{ id: 1, name: 'Low' }, { id: 2, name: 'High', description: 'Answered first' }]" clearable />
+
+<ComboboxInput name="customer" :search="{ url: '/api/customers', debounce: 300 }" />   <!-- remote -->
+
+<ComboboxInput name="tags" multiple search-enabled :options="tags" />
+```
+
+The remote endpoint receives `?query=…` and must answer with a JSON array (or `{ data: [] }`). The `X-XSRF-TOKEN` cookie is forwarded automatically. Selected options always keep their label even when they are not part of the latest results.
+
+### `ChipsInput` (Bootstrap 6 Chips)
+
+Value: array of strings.
+
+| Prop | Default | Description |
+|---|---|---|
+| `placeholder` | i18n | |
+| `separator` | `','` | Splits typed / pasted text. `null` disables |
+| `allowDuplicates` | `false` | |
+| `maxChips` | `null` | |
+| `dismissible` | `true` | Remove button on chips |
+| `dismissIcon` | `null` | Custom remove icon markup |
+| `createOnBlur` | `true` | |
+| `validator` | `null` | `(value) => boolean`; rejected values emit `rejected` |
+
+Events: `update:modelValue`, `change`, `add`, `remove`, `select`, `rejected`, `focus`, `blur`. Exposed: `add()`, `remove()`, `clear()`, `focus()`.
+
+### `OTPInput` (Bootstrap 6 OTP)
+
+| Prop | Default | Description |
+|---|---|---|
+| `length` (`maxLength` legacy) | `6` | Number of characters |
+| `type` | `'numeric'` | `numeric` \| `alphanumeric` \| `alpha` |
+| `mask` | `false` | Show `•` |
+| `groups` | `null` | e.g. `[3, 3]` |
+| `separator` | `'·'` | |
+| `autoSubmit` | `false` | Submit the `FormContainer` when the code is complete |
+| `autofocus` | `false` | |
+
+Events: `update:modelValue`, `change`, `input`, `complete`, `focus`, `blur`. Exposed: `focus()`, `clear()`.
+A single real input backs the slots, so SMS / password-manager autofill keeps working.
+
+### `RangeInput` (Bootstrap 6 Range)
+
+| Prop | Default | Description |
+|---|---|---|
+| `min` / `max` / `step` | `0` / `100` / `1` | |
+| `bubble` | `false` | Value bubble above the thumb |
+| `formatter` | `null` | `(value) => string` for bubble and tick labels |
+| `ticks` | `[]` | `[0, 50, 100]` or `[{ value, label }]` |
+
+Value: `number`. Events: `update:modelValue`, `change`, `input`, `focus`, `blur`. `RangeSliderInput` is an alias.
+
+### Other inputs
+
+| Component | Highlights |
+|---|---|
+| `StarRatingInput` | `maxStars`, `precision` (steps per star), `showValue`, `clearable`, `value`; pointer + keyboard, RTL aware, `role="slider"` |
+| `CaptchaInput` | `url`, `placeholder`, `refreshOnSubmit`, `imageWidth`, `imageHeight`; event `refresh` |
+| `PersianDatePickerInput` | `calendar`, `view`, `min`, `max`, `range`, `format`, `inputFormat`, `pickerOptions`, `inputClass`; events `open`, `close` |
+| `EditorInput` | TinyMCE: `options`, `height`, `placeholder`, `apiKey`, `tinymceScriptSrc`; event `init` |
+| `LocationInput` | Leaflet: `center`, `zoom`, `height`, `tileUrl`, `attribution`; value `{ lat, lng }`; event `ready` |
+| `FileInput` (`SimpleUploader`) | `multiple`, `endpoint`, `accept`, `headers`, `fieldName`; events `added`, `progress`, `uploaded`, `error`, `removed` |
+| `DropzoneInput` | `multiple`, `url`, `options`, `headers`; events `ready`, `added`, `success`, `error`, `removed`, `complete` |
+| `UppyInput` | `multiple`, `useXHR`, `XHRConfig`, `url`, `config`, `errorHandler`, `showRestrictionCaption`; all Uppy events are re-emitted |
+
+---
+
+## Upload endpoint contract
+
+`FileInput`, `DropzoneInput` and `UppyInput` talk to the same endpoint shape:
+
+* `POST {url}` — multipart field `file` → JSON `{ "data": { "path": "tmp/abc.jpg" } }` (or `{ "path": … }`).
+* `DELETE {url}` — body is the stored `path` (`FileInput`, `DropzoneInput`) or the JSON response (`UppyInput`).
+
+`FileInput` stores the `path` string(s); `DropzoneInput` / `UppyInput` store the response object(s). `form.uploading` holds the upload progress, so `SubmitButton` is disabled until uploads finish.
+
+## Internationalisation
+
+Built-in dictionaries: `en` and `fa`. The default `locale: 'auto'` picks `fa` when the page is RTL (`dir="rtl"` / `lang="fa"`) and `en` otherwise.
+Set the locale globally to avoid any SSR / hydration difference:
+
+```js
+import { configureI18n } from 'inertia-bootstrap-forms';
+
+configureI18n({ locale: 'fa' });
+configureI18n({ messages: { fa: { 'select.noResults': 'موردی نیست' } } });
+```
+
+Any component with texts also accepts a `locale` prop and explicit text props (`placeholder`, `noResultsText`, …).
+
+## Lifecycle, SSR and cleanup
+
+* Bootstrap plugins are created in `onMounted` through `useBsInstance()` and disposed in `onBeforeUnmount`; re-created automatically when a prop that is only read at construction time changes (`multiple`, `ticks`, `length`, …).
+* Plugins are imported lazily with `import('bootstrap/js/dist/<plugin>.js')` — bundlers code-split them.
+* `useDisposables()` tracks listeners, timers, `AbortController`s, XHRs, Dropzone and Uppy instances and releases them on unmount (also when the component unmounts while a plugin is still loading).
+* Server rendering outputs the static markup; widgets that need the DOM (Combobox, Chips, OTP, Range, Leaflet, date picker, …) start after hydration.
+
+## Composables
+
+Build your own fields with the same plumbing:
+
+```vue
+<script setup>
+import { fieldProps, useField } from 'inertia-bootstrap-forms';
+
+const props = defineProps({ ...fieldProps, color: String });
+const emit = defineEmits(['update:modelValue', 'change']);
+const { model, inputId, isInvalid, isDisabled, emitChange } = useField(props, emit);
+</script>
+
+<template>
+    <input type="color" v-model="model" :id="inputId" :disabled="isDisabled" :class="{ 'is-invalid': isInvalid }" @change="emitChange(model, $event)" />
+</template>
+```
+
+Also exported: `useFormApi()`, `useDisposables()`, `useBsInstance()`, `configureBootstrap()`, `configureI18n()`, `toEnglishDigits()`, `countryCodes`.
+
+---
+
+## Migrating from v2
+
+| v2 | v3 |
+|---|---|
+| Bootstrap 5 classes (`.form-check`, `.btn-primary`, …) | Bootstrap 6 (`.check`, `.btn-solid.theme-primary`, …). `.btn-primary` does not exist in Bootstrap 6: `SubmitButton` now renders `btn-solid theme-primary` by itself — use the `variant` / `theme` props instead of `class="btn btn-primary"` |
+| `import 'inertia-bootstrap-forms/dist/style.css'` | **Removed** — no CSS is shipped. Import Bootstrap 6 + third-party CSS yourself |
+| `Select2Input` (choices.js) | `ComboboxInput`; `Select2Input` remains as an alias. The choices.js `config` object is gone — use the documented props. Option field names are set with `valueKey` / `labelKey` (`label` still works as a legacy alias) |
+| Select value always a string | Select value keeps the option's original type (a numeric `id` stays a number) |
+| `RangeSliderInput` (dual thumb, svelte-range-slider-pips) | `RangeInput` (single thumb, Bootstrap 6). Dual range is not supported by Bootstrap 6 |
+| `OTPInput` default length `5` | default `6`; pass `:length="5"` to keep the old size. Fires `complete`; use `auto-submit` instead of `data-auto-submit-length` |
+| `CheckboxInput` `change` event passes the DOM event | `change(value, event)` for every field |
+| `StarRatingInput` stored `"3.5"` strings | stores numbers |
+| `FormContainer` rendered server messages with `v-html` | text by default, `html-messages` to opt in |
+| `FormContainer` emitted extra helper methods inside the data | emits only the form data |
+| `FileInput` needed `window.axios` | uses `XMLHttpRequest` + `fetch`, forwards the `XSRF-TOKEN` cookie |
+| `AmountInput` / `QuantityInput` needed `maska` | built in (Persian digits supported) |
+| `vue3-bootstrap-components`, `choices.js`, `svelte-range-slider-pips` bundled | removed |
+| `name` was `required` | optional — omit it for standalone `v-model` usage |
+| Peer: Bootstrap 5 CSS | Peer: `bootstrap@^6.0.0-alpha.1`, `@floating-ui/dom` |
+
+## Notes and known limitations
+
+* Bootstrap 6 is currently in **alpha**; class names and plugin APIs may still change before the stable release.
+* Bootstrap 6 Combobox creates a `Menu` on the same toggle element, which makes Bootstrap log *"Bootstrap doesn't allow more than one instance per element"* to the console. This message comes from Bootstrap itself; the component works normally.
+* Bootstrap 6's own Datepicker has no Jalali calendar, so `PersianDatePickerInput` keeps `vue3-persian-datetime-picker`. Theme it with CSS variables in your app.
+* `LocationInput` in RTL pages: Leaflet panes need `left: auto; right: 0` — add that rule in your own CSS if the map renders offset.
+* `AmountInput` / `QuantityInput` handle integers.
+* `data-bs-toggle` attributes on the Combobox / Menu toggles are required for Bootstrap's data-API click handling and are rendered by the components.
+
+## Development
 
 ```bash
-npm install maska
-```
-
-```js
-import { vMaska } from 'maska/vue';
-
-app.directive('maska', vMaska);
-```
-
-You can use any version/config of `maska` you like — the components only depend on the directive name (`v-maska`) and the `@maska` event payload (`event.detail.unmasked`), so feel free to follow Maska's own documentation for advanced masking options.
-
-### `$number` global helper
-
-The same two components call `this.$number.toEnglish(...)` to convert localized (Persian/Arabic-Indic) digits typed by the user into plain English digits before storing them in the form. This helper is **not bundled** — you need to provide it as a global property. A minimal implementation that mirrors the digit conversion already used internally by `FormContainer` on submit:
-
-```js
-// resources/js/plugins/number.js
-const persianDigits = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
-const arabicDigits  = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
-
-export default {
-  install(app) {
-    app.config.globalProperties.$number = {
-      toEnglish(value) {
-        if (value === null || value === undefined) return value;
-        let str = value.toString();
-        persianDigits.forEach((d, i) => { str = str.replaceAll(d, i); });
-        arabicDigits.forEach((d, i) => { str = str.replaceAll(d, i); });
-        return str.replaceAll(',', '');
-      }
-    };
-  }
-};
-```
-
-```js
-import NumberPlugin from './plugins/number';
-app.use(NumberPlugin);
-```
-
-If you don't use `AmountInput` or `QuantityInput`, you can skip this section entirely.
-
-### Optional: Font Awesome
-
-`CaptchaInput` renders a refresh icon using a Font Awesome class (`fal fa-sync-alt`, Pro "light" style). If you don't load Font Awesome Pro, the button still works — you just won't see the icon. Swap in your own icon via the component's markup if needed.
-
----
-
-## Core Concepts
-
-### `FormContainer` and the injected `form`
-
-`<FormContainer>` wraps Inertia's `useForm()` and `provide()`s it to every descendant via Vue's `provide`/`inject`. All the field components below `inject` this `form` object and read/write `form[name]` automatically — that's the entire trick behind not having to wire `v-model` on every field yourself.
-
-```vue
-<FormContainer v-model="formData" url="/login" method="post" reset-on-success>
-  <TextInput name="email" />
-  <PasswordInput name="password" />
-  <SubmitButton />
-</FormContainer>
-```
-
-`FormContainer` props:
-
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `url` | String | `''` | Endpoint the form submits to. |
-| `method` | String | `'post'` | HTTP method passed to Inertia's `form.submit()`. |
-| `only` | Array | `[]` | Inertia partial-reload `only` option. |
-| `modelValue` | Object | `{}` | Initial data for the form (also works with `v-model`). |
-| `options` | Object | `{}` | Extra fields merged into the Inertia form state (e.g. defaults that aren't real inputs). |
-| `resetOnSuccess` | Boolean | `false` | Calls `form.reset()` automatically after a successful submit. |
-| `submitHandler` | Function | `null` | If provided, this function is called instead of the default Inertia submit flow — useful for custom submit logic (e.g. confirmation modals). |
-
-Events: `submit`, `reset`, `onStart`, `onFinish`, `onSuccess`, `onError`, `change`, `update:modelValue`.
-
-Slots:
-- default — scoped with `{ form, submit }`, the actual form fields.
-- `errors` — override the default error `<Alert>` block.
-- `message` — override the default success `<Alert>` block (shown when the backend response includes a `message` prop).
-
-Exposed methods (via template ref): `submit()`, `reset()`.
-
-Notable built-in behavior: on submit, `FormContainer` converts any Persian/Arabic-Indic digits present in the form's values to plain English digits before sending the request — handy for numeric fields typed with a Persian keyboard.
-
-### Field naming & binding
-
-Every field component takes a `name` prop. As long as it lives inside a `<FormContainer>` (or any component that injects a `form`), it automatically reads/writes `form[name]` — no manual `v-model` needed:
-
-```vue
-<TextInput name="title" />
-<!-- equivalent to manually doing -->
-<input v-model="form.title" name="title" class="form-control">
-```
-
-Validation errors are read from `form.errors[name]` and applied as Bootstrap's `is-invalid` class automatically.
-
-### Grouped / repeated fields — `GroupControl`
-
-`<GroupControl name="...">` lets a *block* of fields write into a nested/indexed slice of the form data instead of the top level — useful for repeating rows (e.g. multiple bid items, multiple contacts, etc.).
-
-Each `<GroupControl>` instance figures out its own index (`groupID`) based on its position among sibling `.form-control-group` blocks, so the typical pattern is to repeat the **whole** `<GroupControl>` with `v-for`:
-
-```vue
-<div v-for="(row, index) in rows" :key="index">
-  <GroupControl name="bids">
-    <TextInput name="title" />
-    <AmountInput name="price" />
-  </GroupControl>
-</div>
-```
-
-This produces `form.bids[0].title`, `form.bids[0].price`, `form.bids[1].title`, etc.
-
-`MultiQuantityInput` (documented below) uses a single `GroupControl` to collect a *map* of quantities (`form.tickets.adult`, `form.tickets.child`, …) instead of a repeated list — see its own example for that variant.
-
-### Validation & error display
-
-`FormContainer` renders a default Bootstrap `Alert` listing every message in `form.errors` (replaceable via the `errors` slot), and every field adds `is-invalid` automatically when `form.errors[name]` exists. You don't need to render error text per-field unless you want to — Bootstrap will show `.invalid-feedback` siblings if you add them yourself.
-
-### Element IDs
-
-`form.getID(field)` (available on the injected `form`) builds a unique, collision-free `id` attribute for fields, taking the surrounding `<FormContainer>` id and any `GroupControl` into account. Components that render a real `<label for="">`/`<input id="">` pair (e.g. `TextInput`, `CheckboxInput`) use this automatically.
-
----
-
-## Component Reference
-
-### FormContainer
-
-See [Core Concepts](#formcontainer-and-the-injected-form) above for the full prop/event/slot table.
-
-### FormLabel
-
-Simple `<label>` wrapper that appends a red `*` when `required` is set.
-
-```vue
-<FormLabel required>Email address</FormLabel>
-```
-
-| Prop | Type | Default |
-|---|---|---|
-| `required` | Boolean | `false` |
-
-Slot: default — label text.
-
-### GroupControl
-
-See [Grouped / repeated fields](#grouped--repeated-fields--groupcontrol) above.
-
-| Prop | Type | Required |
-|---|---|---|
-| `name` | String | yes |
-
-### TextInput
-
-The base text field. Most other "shortcut" inputs (`EmailInput`, `PasswordInput`, `MobileInput`) are thin wrappers around this component.
-
-```vue
-<TextInput name="full_name" />
-```
-
-| Prop | Type | Required |
-|---|---|---|
-| `name` | String | yes |
-
-Renders a plain `<input type="text" class="form-control">` bound to `form[name]`.
-
-### TextAreaInput
-
-Same binding pattern as `TextInput`, renders a `<textarea class="form-control">`.
-
-```vue
-<TextAreaInput name="description" />
-```
-
-| Prop | Type | Required |
-|---|---|---|
-| `name` | String | yes |
-
-### EmailInput
-
-Thin wrapper around `TextInput` (`type="email"`, Persian placeholder "ایمیل خود را وارد کنید").
-
-```vue
-<EmailInput name="email" />
-```
-
-> **Note:** see [Known Limitations](#known-limitations) — the `name` prop on this specific wrapper is not declared correctly in the current source, so passing a custom `name` may not bind to the form data as expected. If that affects you, use `<TextInput name="..." type="email" />` directly instead.
-
-### PasswordInput
-
-Thin wrapper around `TextInput` (`type="password"`, Persian placeholder "گذرواژه خود را وارد کنید").
-
-```vue
-<PasswordInput name="password" />
-```
-
-| Prop | Type | Default |
-|---|---|---|
-| `name` | String | `'password'` |
-
-### MobileInput
-
-Thin wrapper around `TextInput` (`type="tel"`, Persian placeholder "موبایل خود را وارد کنید").
-
-```vue
-<MobileInput name="mobile" />
-```
-
-| Prop | Type | Default |
-|---|---|---|
-| `name` | String | `'mobile'` |
-
-### TelInput
-
-Full international phone input powered by the **external package `vue-tel-input`**. Defaults to Iran (`ir`) with a preferred-country list (`ir`, `us`, `tr`, `ca`) and a searchable country dropdown.
-
-```vue
-<TelInput name="phone" placeholder="912 345 6789" />
-```
-
-| Prop | Type | Default |
-|---|---|---|
-| `name` | String | `'email'` (see [Known Limitations](#known-limitations)) |
-| `placeHolder` | String | `'000 000 0000'` |
-
-Since this wraps `vue-tel-input`, all of that package's own configuration (locales, validation rules, dial-code formatting, flags, styling, etc.) can be controlled by following [vue-tel-input's documentation](https://www.npmjs.com/package/vue-tel-input) and adjusting the source if you need options beyond what's hard-coded here (`mode`, `defaultCountry`, `preferredCountries`, `dropdownOptions`).
-
-### AmountInput
-
-Numeric input with thousands-separator masking (via **external package `maska`** — see [Global Setup](#v-maska-directive)) and a trailing unit label.
-
-```vue
-<AmountInput name="price" unit="تومان" />
-```
-
-| Prop | Type | Default |
-|---|---|---|
-| `name` | String | required |
-| `required` | Boolean | `false` |
-| `disabled` | Boolean | `false` |
-| `readonly` | Boolean | `false` |
-| `placeholder` | String | `'عدد را وارد کنید'` |
-| `unit` | String | `'عدد'` |
-
-Slot: `suffix` — extra content appended after the unit label (inside the Bootstrap `InputGroup`).
-
-Requires the `v-maska` directive and `$number.toEnglish()` global helper — see [Global Setup](#global-setup-required-helpers).
-
-### QuantityInput
-
-Stepper-style numeric input (`+` / `-` buttons) with the same masking as `AmountInput`.
-
-```vue
-<QuantityInput name="qty" :min="1" :max="10" unit="عدد" />
-```
-
-| Prop | Type | Default |
-|---|---|---|
-| `name` | String | required |
-| `required` | Boolean | `false` |
-| `disabled` | Boolean | `false` |
-| `readonly` | Boolean | `false` |
-| `unit` | String | `'عدد'` |
-| `min` | Number | `0` |
-| `max` | Number | `null` |
-
-Slot: `suffix`.
-
-Also requires the `v-maska` directive and `$number.toEnglish()` — see [Global Setup](#global-setup-required-helpers).
-
-### MultiQuantityInput
-
-A dropdown of multiple `QuantityInput` rows (e.g. "2 adults, 1 child") that collapses into a single summary button. Internally wraps its options in one `GroupControl`, so the result is stored as a map: `form[name][optionKey]`.
-
-```vue
-<MultiQuantityInput
-  name="tickets"
-  unit="نفر"
-  :options="[
-    { name: 'بزرگسال', min: 1, max: 10 }, // key: 0
-    { name: 'کودک', min: 0, max: 10 },     // key: 1
-  ]"
-/>
-```
-
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `name` | String | required | |
-| `options` | Array | required | Each item can be a plain string or `{ name, min, max }`. The array index becomes the data key. |
-| `required` | Boolean | `false` | |
-| `disabled` | Boolean | `false` | |
-| `readonly` | Boolean | `false` | |
-| `max` | Number | `null` | Fallback max applied to options without their own `max`. |
-| `totalMax` | Number | `null` | (declared, not currently enforced in the template logic) |
-| `min` | Number | `0` | Fallback min applied to options without their own `min`. |
-| `totalMin` | Number | `null` | (declared, not currently enforced in the template logic) |
-| `unit` | String | `'Number'` | Label shown on the collapsed summary button. |
-
-### CheckboxInput
-
-Single checkbox/radio bound through the same `form`/`group` injection pattern as text fields.
-
-```vue
-<CheckboxInput name="accept_terms" value="yes">I agree to the terms</CheckboxInput>
-```
-
-| Prop | Type | Default |
-|---|---|---|
-| `name` | String | required |
-| `id` | String | `''` |
-| `value` | String / Number | `'yes'` |
-| `type` | String | `'checkbox'` (can be set to `'radio'`) |
-
-Event: `change`. Slot: default — label text.
-
-To build a checkbox/radio **group**, repeat the component with the same `name` and different `value`s; bind the initial form value to an array for multi-select checkboxes, or a scalar for radios.
-
-### CheckboxButtonInput
-
-Same idea as `CheckboxInput` but styled as a Bootstrap "button checkbox/radio" (`.btn-check` + label) instead of a native checkbox UI.
-
-```vue
-<CheckboxButtonInput name="plan" value="monthly">Monthly</CheckboxButtonInput>
-<CheckboxButtonInput name="plan" value="yearly">Yearly</CheckboxButtonInput>
-```
-
-| Prop | Type | Default |
-|---|---|---|
-| `name` | String | required |
-| `id` | String | `''` |
-| `value` | String | `'yes'` |
-| `type` | String | `'radio'` |
-
-Event: `change`. Wrap the rendered `<label>` in your own `.btn-group`/`.btn` classes for the typical Bootstrap button-group look.
-
-### CheckboxToggle
-
-A larger, card-style toggle (background highlight when checked) — good for plan pickers, add-on selectors, etc.
-
-```vue
-<CheckboxToggle name="addons" value="extra_luggage">Extra luggage</CheckboxToggle>
-```
-
-| Prop | Type | Default |
-|---|---|---|
-| `name` | String | required |
-| `id` | String | `''` |
-| `value` | String / Number | `'yes'` |
-| `type` | String | `'checkbox'` |
-| `hideInput` | Boolean | `false` — visually hides the native input while keeping the toggle clickable. |
-
-Event: `change`.
-
-### Select2Input
-
-Searchable dropdown powered by the **external package `choices.js`**, with optional remote/async search.
-
-```vue
-<Select2Input
-  name="category_id"
-  :options="categories"
-  label="title"
-  placeholder="Select a category"
-  search-enabled
-/>
-
-<!-- Remote search -->
-<Select2Input
-  name="user_id"
-  :search="{ url: '/api/users/search' }"
-  placeholder="Search a user..."
-/>
-```
-
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `name` | String | required | |
-| `options` | Array | — | Array of objects (or plain strings/numbers). |
-| `label` | String | `null` | Object field used as the display label. Falls back to `name` / `label` / `value`. |
-| `placeholder` | String | `'Click to choice'` | |
-| `searchPlaceholder` | String | `'Type for search...'` | |
-| `multiple` | Boolean | `false` | |
-| `required` | Boolean | `false` | |
-| `config` | Object | `{}` | Merged into `choices.js`'s own config — use this for any Choices.js option not exposed above. |
-| `locale` | String | `'en'` | Set to `'fa'` (or rely on auto-detection from `document.dir === 'rtl'`) for built-in Persian UI strings. |
-| `searchEnabled` | Boolean | `false` | Enables local in-list searching. Automatically `true` when `search.url` is set. |
-| `hideDropdown` | Boolean | `false` | |
-| `search` | Object | `{ url: null }` | When `url` is set, typing triggers a debounced `POST` request (`?query=...`) and replaces the option list with the JSON response. |
-
-Events: `update:modelValue`, `search`, `searching`, `change`, `selected`.
-
-> **Note:** the prop named `key` (meant to pick which object field is used as the option *value*) cannot actually be set from a template, because Vue reserves `:key` for its own list-rendering mechanism. The default value-resolution (`id` → `name` → `label` → `value`) is used instead. See [Known Limitations](#known-limitations).
-
-Since this wraps Choices.js, any configuration option supported by that library can be passed through the `config` prop — see [Choices.js documentation](https://github.com/Choices-js/Choices) for the full list (custom templates, callback hooks, RTL, etc.).
-
-### PersianDatePickerInput
-
-Persian (Jalali) date/time picker powered by the **external package `vue3-persian-datetime-picker`**.
-
-```vue
-<PersianDatePickerInput name="birth_date" />
-<PersianDatePickerInput name="appointment" calendar="datetime" view="datetime" range />
-```
-
-| Prop | Type | Default |
-|---|---|---|
-| `name` | String | required |
-| `calendar` | String | `'date'` |
-| `view` | String | `'date'` |
-| `min` | String | — |
-| `max` | String | — |
-| `range` | Boolean | `false` |
-| `locale` | String | `'fa'` |
-| `format` | String | `'jYYYY-jMM-jDD'` |
-| `inputFormat` | String | `null` (falls back to `format`) |
-| `placeholder` | String | `'انتخاب تاریخ'` |
-
-Event: `change`. Method exposed: `clear()`.
-
-Any option supported by `vue3-persian-datetime-picker` itself (Gregorian mode, time steps, custom themes, etc.) can be used by following [that package's own documentation](https://www.npmjs.com/package/vue3-persian-datetime-picker) and extending the source where needed.
-
-### RangeSliderInput
-
-Slider input powered by the **external package `svelte-range-slider-pips`**.
-
-```vue
-<RangeSliderInput name="budget" :min="0" :max="1000" :step="10" />
-<RangeSliderInput name="price_range" :min="0" :max="1000" range />
-```
-
-| Prop | Type | Default |
-|---|---|---|
-| `name` | String | `null` |
-| `modelValue` | Number | `0` |
-| `min` | Number | `1` |
-| `max` | Number | `100` |
-| `step` | Number | `1` |
-| `readonly` | Boolean | `false` |
-| `range` | Boolean | `false` — emits `[min, max]` instead of a single value. |
-| `options` | Object | `{}` | Passed straight through to `svelte-range-slider-pips` — use this for pips formatting, colors, springs, etc. See [that package's docs](https://github.com/simeydotme/svelte-range-slider-pips) for everything it supports. |
-
-Events: `update:modelValue`, `change`.
-
-### StarRatingInput
-
-Hover/click star rating, no external dependency.
-
-```vue
-<StarRatingInput name="rating" :max-stars="5" />
-```
-
-| Prop | Type | Default |
-|---|---|---|
-| `name` | String | `null` |
-| `modelValue` | Number | `0` |
-| `maxStars` | Number | `5` |
-| `precision` | Number | `2` |
-| `showValue` | Boolean | `true` |
-| `readonly` | Boolean | `false` |
-
-Event: `update:modelValue`.
-
-### CaptchaInput
-
-Image captcha field with a refresh button. Expects a backend endpoint that returns a captcha **image** for `GET` and re-rolls automatically whenever the form finishes processing (e.g. after a failed submit).
-
-```vue
-<CaptchaInput url="/captcha/default" />
-```
-
-| Prop | Type | Default |
-|---|---|---|
-| `name` | String | `'captcha'` |
-| `url` | String | `'/captcha/default'` |
-| `required` | Boolean | `false` |
-| `placeholder` | String | `'کد امنیتی روبرو را وارد کنید'` |
-
-Must be used inside a `<FormContainer>` (it injects `form` directly, without a fallback). A Persian comment in the source notes a ready-to-pair Laravel captcha endpoint is expected at `url`.
-
-### EditorInput
-
-Rich-text editor powered by the **external package `@tinymce/tinymce-vue`** (TinyMCE).
-
-```vue
-<EditorInput name="body" :options="{ height: 400 }" />
-```
-
-| Prop | Type | Default |
-|---|---|---|
-| `name` | String | required |
-| `placeholder` | String | `''` |
-| `disabled` | Boolean | `false` |
-| `options` | Object | `{}` — merged into TinyMCE's own `init` config. |
-
-Event: `update:modelValue`. Exposed: `editor()` — returns the underlying TinyMCE editor instance.
-
-TinyMCE typically needs either a hosted script/API key or a self-hosted bundle — refer to [TinyMCE's Vue integration docs](https://www.tiny.cloud/docs/tinymce/latest/vue-cloud/) for licensing/configuration details and pass any extra option (toolbar, plugins, content_css, license_key, etc.) through the `options` prop.
-
-### LocationInput
-
-Interactive map picker (click or drag a marker) powered by **external packages `@vue-leaflet/vue-leaflet` and `leaflet`**, using OpenStreetMap tiles.
-
-```vue
-<LocationInput name="location" />
-```
-
-| Prop | Type | Default |
-|---|---|---|
-| `name` | String | `'location'` |
-| `disabled` | Boolean / String | `false` |
-| `readonly` | Boolean / String | `false` |
-| `modelValue` | Object | `{ lat, lng }` |
-
-Event: `update:modelValue`. Stores `{ lat, lng }` into `form[name]`.
-
-Since this wraps Vue-Leaflet, any Leaflet/Vue-Leaflet feature (custom tile providers, zoom controls, extra layers) can be added by following [Vue-Leaflet's documentation](https://vue-leaflet.github.io/vue-leaflet/) and extending the component's `<l-map>` template if you need more than a single draggable marker.
-
-### FileInput
-
-Single/multiple file uploader using `axios` (global `window.axios`) with a per-file progress bar, retry, and delete.
-
-```vue
-<FileInput name="avatar" endpoint="/upload" />
-<FileInput name="gallery" endpoint="/upload" multiple />
-```
-
-| Prop | Type | Default |
-|---|---|---|
-| `name` | String | required |
-| `multiple` | Boolean | `false` |
-| `endpoint` | String | `'/upload'` |
-
-Event: `update:modelValue`. See [Upload Endpoint Contract](#upload-endpoint-contract-backend).
-
-### SimpleUploader
-
-Functionally identical to `FileInput`, but uses the native `fetch` API instead of `axios` — use this one if you don't have `window.axios` configured globally.
-
-```vue
-<SimpleUploader name="avatar" endpoint="/upload" />
-```
-
-| Prop | Type | Default |
-|---|---|---|
-| `name` | String | required |
-| `multiple` | Boolean | `false` |
-| `endpoint` | String | `'/upload'` |
-
-### DropzoneInput
-
-Drag-and-drop uploader powered by the **external package `dropzone`** (Dropzone.js).
-
-```vue
-<DropzoneInput name="documents" url="/upload" multiple :options="{ maxFiles: 5 }" />
-```
-
-| Prop | Type | Default |
-|---|---|---|
-| `name` | String | required |
-| `multiple` | Boolean | `false` |
-| `url` | String | `'/upload'` |
-| `options` | Object | `{}` — merged into Dropzone's own constructor options. |
-
-Event: `update:modelValue`.
-
-Since this wraps Dropzone.js directly, any Dropzone option (`acceptedFiles`, `maxFilesize`, `dictDefaultMessage`, thumbnails, custom previews, etc.) can be passed through the `options` prop — see [Dropzone.js's documentation](https://docs.dropzone.dev/) for the full list.
-
-### UppyInput
-
-The most feature-rich uploader, powered by the **external package family `@uppy/core`, `@uppy/vue`, `@uppy/xhr-upload`** (the latter two are bundled; `@uppy/audio`, `@uppy/dashboard`, `@uppy/drag-drop`, and `@uppy/locales` are listed as dependencies for you to opt into via the slot below).
-
-Default usage renders Uppy's built-in `Dropzone` + `FilesList`:
-
-```vue
-<UppyInput
-  name="attachments"
-  url="/upload"
-  multiple
-  :config="{ restrictions: { maxFileSize: 5 * 1024 * 1024, allowedFileTypes: ['.jpg', '.png', '.pdf'] } }"
-/>
-```
-
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `name` | String | required | |
-| `multiple` | Boolean | `false` | |
-| `useXHR` | Boolean | `true` | Automatically registers `@uppy/xhr-upload` pointed at `url`. Set `false` if you want to register your own uploader plugin (e.g. AWS S3, Tus) on the exposed `uppy` instance instead. |
-| `XHRConfig` | Object | `{}` | Merged into `@uppy/xhr-upload`'s own config (headers, formData, fieldName, etc.). |
-| `url` | String | `'/upload'` | |
-| `config` | Object | `{}` | Merged into Uppy's core constructor options (`id`, `autoProceed`, `restrictions`, `locale`, etc.). |
-| `errorHandler` | Function | `null` | Custom error display/handling instead of the built-in inline error banner. |
-| `showRestrictionCaption` | Boolean | `true` | Shows an auto-generated Persian caption describing the configured file-size/type/count restrictions. |
-
-Events: `update:modelValue`, `file-added`, `file-removed`, `beforeUpload`, `progress`, `upload`, `upload-progress`, `upload-error`, `upload-success`, `upload-pause`, `complete`, `error`, `upload-retry`, `upload-stalled`, `retry-all`, `cancel-all`, `restriction-failed`.
-
-Slot: default — scoped with `{ uppy }`, the raw Uppy instance, letting you completely replace the default Dropzone/FilesList UI with your own, or register extra Uppy plugins:
-
-```vue
-<UppyInput name="cover" url="/upload" v-slot="{ uppy }">
-  <!-- bring your own plugins, e.g. @uppy/dashboard, @uppy/audio, @uppy/drag-drop -->
-</UppyInput>
-```
-
-Because the file restriction caption, error banners, and the `Dropzone`/`FilesList` building blocks all come straight from Uppy, refer to [Uppy's documentation](https://uppy.io/docs/uppy/) for every available core/plugin option (restrictions, locales, custom plugins like Dashboard/Audio/Webcam/DragDrop, etc.) — anything supported there can be passed through `config`, `XHRConfig`, or registered manually on the exposed `uppy` instance.
-
-### SubmitButton
-
-Submit button wired to the injected `form`'s `processing`/`uploading` state, showing a spinner automatically.
-
-```vue
-<SubmitButton />
-<SubmitButton>Save changes</SubmitButton>
-```
-
-| Prop | Type | Default |
-|---|---|---|
-| `disabled` | Boolean | `false` |
-
-Slots:
-- default — scoped with `{ form }`. Defaults to "تایید و ثبت اطلاعات" (Persian for "Confirm and submit").
-- `progress` — scoped, defaults to an upload percentage (`form.uploading`%) while a file upload is in progress.
-
-Must be used inside a `<FormContainer>` (injects `form` directly).
-
----
-
-## Upload Endpoint Contract (backend)
-
-`FileInput`, `SimpleUploader`, `DropzoneInput`, and `UppyInput` all expect a similar JSON contract from your backend:
-
-- **Upload (`POST` to the configured endpoint/url):** respond with JSON describing the stored file. At minimum a `path` field, e.g. `{ "path": "uploads/abc123.jpg" }`. (`DropzoneInput` also accepts the raw response if there's no `.data` wrapper; `UppyInput` reads from `response.body`.)
-- **Delete (`DELETE` to the same endpoint/url):** the components send the stored file's data (e.g. `{ "path": "..." }`) as the request body so the backend can remove it from storage.
-
-The original package README points to a companion Laravel package, **`novinvision/simple-uploader`**, for implementing this endpoint server-side — use it if it's available to you, or implement an equivalent controller.
-
----
-
-## Styling & Theming
-
-All components are plain Bootstrap 5 markup/classes (`.form-control`, `.input-group`, `.form-check`, `.btn`, etc.) plus a handful of custom classes (`.form-check-toggle`, `.star-rating`, `.multi-quantity-input`, `.file-input-uploader`, `.uppy-input-area`, …) shipped in `dist/style.css`. Most custom styling reads Bootstrap CSS variables (`--bs-primary`, `--bs-border-radius`, `--bs-body-bg`, etc.), so if your project already themes Bootstrap via CSS variables, these components will inherit that theme automatically. Persian/Farsi numeral display uses a `.fanum` utility class throughout — make sure your global stylesheet defines the font-feature/font-family rules you want for it (it's used as a styling hook, not generated by this package).
-
----
-
-## TypeScript
-
-Type declarations are provided in `index.d.ts` (most components are typed loosely as `DefineComponent<{}, {}, any>` except for the ones with richer prop/event typing: `CheckboxButtonInput`, `EditorInput`, `UppyInput`, `FormContainer`, `LocationInput`, `Select2Input`, `SubmitButton`, `RangeSliderInput`). Import as usual:
-
-```ts
-import { TextInput, FormContainer } from 'inertia-bootstrap-forms';
+npm install
+npm test        # vitest + jsdom (components, Bootstrap plugin lifecycle, SSR)
+npm run build   # vite library build → dist/
 ```
 
 ---
 
-## Known Limitations
-
-A few quirks in the current source worth knowing about before you rely on certain props:
-
-- **`EmailInput`'s `name` prop:** the component's `props` block doesn't actually declare a `name` prop (it declares an unrelated `FileInput` prop instead), so passing a custom `name="..."` may not bind correctly to the form. If you need a non-default field name for an email field, use `<TextInput name="..." type="email" placeholder="..." />` directly.
-- **`TelInput`'s default `name`:** defaults to `'email'` rather than something like `'mobile'`/`'phone'` — always pass an explicit `name` prop to avoid surprises.
-- **`Select2Input`'s `key` prop:** intended to let you choose which object field is used as an option's value, but it can't actually be set from a template, since Vue reserves `:key` for its own list-rendering/diffing mechanism. In practice, value resolution always falls back to `id` → `name` → `label` → `value` (or the `label` prop, for the display text).
-- **`MultiQuantityInput`'s `totalMax`/`totalMin` props:** declared, but not currently enforced anywhere in the component's logic — treat them as reserved for future use rather than working constraints.
-- Several components are typed `DefineComponent<{}, {}, any>` in `index.d.ts`, i.e. without real prop typing — rely on this README (or the `.vue` source) rather than IDE autocomplete for the full prop list of those components.
+Built and maintained by **[Novin Vision](https://novinvision.com)** · MIT license

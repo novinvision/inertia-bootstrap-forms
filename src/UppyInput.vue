@@ -1,324 +1,237 @@
-<template>
-  <div class="uppy-input-area" ref="inputEl" v-if="uppy">
-    <UppyContextProvider :name="'uu' + name" :uppy="uppy">
-      <slot :uppy="uppy">
-        <FilesList class="uppy-file-lists"/>
-        <Dropzone class="uppy-drop-zone"/>
-      </slot>
-    </UppyContextProvider>
-    <div class="uppy-input-area--caption small text-body-secondary fst-italic" v-if="restrictionCaption">{{ restrictionCaption }}</div>
-  </div>
-</template>
+<script>
+import { computed, defineAsyncComponent, defineComponent, onMounted, ref, shallowRef, watch } from 'vue';
+import { fieldProps, useField } from './composables/useField.js';
+import { useDisposables } from './composables/useDisposables.js';
+import { useI18n } from './i18n.js';
+import { laravelHeaders } from './utils/http.js';
 
-<script setup>
-import {computed, inject, onBeforeUnmount, onMounted, shallowRef, ref, watch} from 'vue'
-import {
-  Dropzone,
-  FilesList,
-  UppyContextProvider,
-} from '@uppy/vue';
-import Uppy from '@uppy/core';
+const UppyContextProvider = defineAsyncComponent(() => import('@uppy/vue').then((m) => m.UppyContextProvider));
+const FilesList = defineAsyncComponent(() => import('@uppy/vue').then((m) => m.FilesList));
+const UppyDropzone = defineAsyncComponent(() => import('@uppy/vue').then((m) => m.Dropzone));
 
-import '@uppy/vue/css/style.css';
-
-const props = defineProps({
-  name: {type: String, required: true},
-  multiple: {type: Boolean, default: false},
-  useXHR: {type: Boolean, default: true},
-  XHRConfig: {type: Object, default: {}},
-  url: {type: String, default: '/upload'},
-  config: {type: Object, default: () => ({})},
-  errorHandler: {type: Function, default: null},
-  showRestrictionCaption: {type: Boolean, default: true},
-})
-
-const emits = defineEmits([
-  'update:modelValue', 'file-added', 'file-removed', 'beforeUpload',
-  'progress', 'upload', 'upload-progress', 'upload-error',
-  'upload-success', 'upload-pause', 'complete', 'error',
-  'upload-retry', 'upload-stalled', 'retry-all', 'cancel-all',
-  'restriction-failed',
-])
-
-const restrictionCaption = ref(null);
-const inputEl = ref(null);
-const uppy = shallowRef(null);
-const isResetting = ref(false);
-const isUnmounting = ref(false);
-const uploadingFiles = ref(0);
-
-// Inject form and group contexts
-const form = inject("form", {value: {}, errors: {}, getID: n => n});
-const group = inject("group", null);
-
-const modelValue = computed({
-  get() {
-    return group?.value?.name
-        ? group.value.getData(props.name)
-        : form.value[props.name];
-  },
-  set(val) {
-    if (group?.value?.name) {
-      group.value.setData(props.name, val);
-    } else {
-      form.value[props.name] = val;
-    }
-    emits("update:modelValue", val);
-  }
-});
-
-uppy.value = new Uppy({
-  id: props.name,
-  autoProceed: true,
-  ...props.config,
-  restrictions: {
-    maxNumberOfFiles: props.multiple ? null : 1,
-    ...(props.config?.restrictions || {})
-  },
-});
-
-uppy.value.on('upload', () => {
-  uploadingFiles.value = uppy.value.getFiles().filter(f => !f.progress.uploadComplete).length;
-  emits('upload');
-});
-
-uppy.value.on('before-upload', (files) => {
-  emits('beforeUpload', files);
-});
-
-uppy.value.on('upload-success', (file, response) => {
-  uploadingFiles.value = Math.max(0, uploadingFiles.value - 1);
-
-  const result = response.body ?? response;
-  if (props.multiple) {
-    const currentValues = Array.isArray(modelValue.value) ? modelValue.value : [];
-    modelValue.value = [...currentValues, result];
-  } else {
-    modelValue.value = result;
-  }
-  emits('upload-success', file, response);
-});
-
-uppy.value.on('file-added', (file) => emits('file-added', file));
-
-uppy.value.on('file-removed', (file) => {
-  const serverResponse = file.response?.body ?? file.response;
-
-  if (props.multiple && Array.isArray(modelValue.value)) {
-    modelValue.value = modelValue.value.filter(item => {
-      return JSON.stringify(item) !== JSON.stringify(serverResponse);
-    });
-  } else {
-    modelValue.value = null;
-  }
-
-  if (serverResponse && !isResetting.value && !isUnmounting.value) {
-    fetch(props.url, {
-      method: 'DELETE',
-      headers: {
-        'X-Requested-With': 'XMLHttpRequest',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(serverResponse),
-    });
-  }
-
-  emits('file-removed', file);
-});
-
-uppy.value.on('progress', (progress) => {
-  if (progress <= 0) {
-    form.value['uploading'] = null;
-  } else if (progress >= 100) {
-    // هنوز منتظر جواب سرور - uploading رو null نکن
-    form.value['uploading'] = uploadingFiles.value > 0 ? 99 : null;
-  } else {
-    form.value['uploading'] = progress;
-  }
-
-  emits('progress', progress)
-});
-uppy.value.on('upload-progress', (file, progress) => emits('upload-progress', file, progress));
-uppy.value.on('upload-pause', (file, progress) => emits('upload-pause', file, progress));
-uppy.value.on('cancel-all', () => emits('cancel-all'));
-uppy.value.on('retry-all', () => emits('retry-all'));
-uppy.value.on('upload-stalled', (error, files) => emits('upload-stalled', error, files));
-uppy.value.on('upload-retry', (file) => emits('upload-retry', file));
-
-uppy.value.on('complete', (result) => {
-  uploadingFiles.value = 0;
-  form.value['uploading'] = null;
-  emits('complete', result);
-});
-
-uppy.value.on('error', (error) => {
-  emits('error', error)
-});
-
-uppy.value.on('upload-error', (file, error, response) => {
-  uploadingFiles.value = Math.max(0, uploadingFiles.value - 1);
-
-  const errorMessage = JSON.parse(response.response)?.message ?? error;
-  handleError(errorMessage);
-  emits('upload-error', file, error, response, errorMessage)
-});
-
-uppy.value.on('restriction-failed', (file, error) => {
-  handleError(error.message);
-  emits('restriction-failed', file, error);
-});
-
-watch(() => form.value?.wasSuccessful, (newVal, oldVal) => {
-  if (newVal === true && oldVal === false) {
-    resetUppy();
-  }
-});
-
-onMounted(() => {
-  if (props.useXHR) {
-    import('@uppy/xhr-upload').then(module => {
-      const XHR = module.default;
-      uppy.value.use(XHR, {
-        method: 'POST',
-        endpoint: props.url,
-        headers: {
-          'accept': 'application/json',
-        },
-        ...props.XHRConfig
-      });
-    });
-  }
-
-  if (uppy.value?.opts?.restrictions) {
-    restrictionCaption.value = buildRestrictionsCaption(uppy.value.opts.restrictions)
-  }
-
-
-  if (inputEl && uppy.value?.opts?.locale?.strings?.dropzoneText) {
-    inputEl.value?.querySelectorAll('[data-uppy-element="dropzone"]>div>div>p')?.forEach(el => {
-      el.innerHTML = uppy.value?.opts?.locale?.strings?.dropzoneText;
-    });
-  }
-});
-
-onBeforeUnmount(() => {
-  isUnmounting.value = true;
-  if (uppy.value) {
-    uppy.value.destroy();
-  }
-});
-
-function resetUppy() {
-  if (uppy.value) {
-    isResetting.value = true;
-    uppy.value.cancelAll();
-    isResetting.value = false;
-    modelValue.value = props.multiple ? [] : null;
-  }
-}
-
-function handleError(error) {
-  if (props.errorHandler) {
-    props.errorHandler(error);
-  } else if (error) {
-    showError(error);
-  }
-}
-
-function showError(message) {
-  if(typeof window !== 'undefined'){
-    const errorEl = document?.createElement('div');
-    errorEl.textContent = message;
-    errorEl.className = 'uppy-error';
-
-    if (inputEl.value) {
-      inputEl.value.prepend(errorEl);
-      setTimeout(() => errorEl.remove(), 3000);
-    }
-  }
-}
-
-const niceBytesUnits = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-
+const UNITS = ['bytes', 'KB', 'MB', 'GB', 'TB'];
 function niceBytes(x) {
-  let l = 0, n = parseInt(x, 10) || 0;
-  while (n >= 1024 && ++l) {
-    n = n / 1024;
-  }
-  return (n.toFixed(n < 10 && l > 0 ? 1 : 0) + niceBytesUnits[l]);
+    let l = 0;
+    let n = parseInt(x, 10) || 0;
+    while (n >= 1024 && l < UNITS.length - 1) {
+        n /= 1024;
+        l++;
+    }
+    return `${n.toFixed(n < 10 && l > 0 ? 1 : 0)}${UNITS[l]}`;
 }
 
-function buildRestrictionsCaption(restrictions) {
-  if (!restrictions) return '';
+/**
+ * Uppy based uploader. Import `@uppy/vue/css/style.css` in your application.
+ * Uppy is created after mount and destroyed on unmount.
+ */
+export default defineComponent({
+    name: 'UppyInput',
+    components: { UppyContextProvider, FilesList, UppyDropzone },
+    emits: [
+        'update:modelValue', 'change', 'ready', 'file-added', 'file-removed', 'beforeUpload', 'progress', 'upload',
+        'upload-progress', 'upload-error', 'upload-success', 'upload-pause', 'complete', 'error', 'upload-retry',
+        'upload-stalled', 'retry-all', 'cancel-all', 'restriction-failed',
+    ],
+    props: {
+        ...fieldProps,
+        multiple: { type: Boolean, default: false },
+        useXHR: { type: Boolean, default: true },
+        XHRConfig: { type: Object, default: () => ({}) },
+        url: { type: String, default: '/upload' },
+        /** Uppy core options. */
+        config: { type: Object, default: () => ({}) },
+        errorHandler: { type: Function, default: null },
+        showRestrictionCaption: { type: Boolean, default: true },
+        locale: { type: String, default: null },
+    },
+    setup(props, { emit, expose }) {
+        const field = useField(props, emit);
+        const { t } = useI18n(() => props.locale);
+        const d = useDisposables();
 
-  const {
-    allowedFileTypes,
-    maxFileSize,
-    minFileSize,
-    maxNumberOfFiles,
-    minNumberOfFiles,
-    maxTotalFileSize,
-  } = restrictions;
+        const uppy = shallowRef(null);
+        const area = ref(null);
+        const caption = ref(null);
+        const errorMessage = ref(null);
+        const uploadingFiles = ref(0);
+        let resetting = false;
+        let unmounting = false;
 
-  const parts = [];
+        const setUploading = (v) => {
+            if (field.form.value) field.form.value.uploading = v;
+        };
 
-  if (allowedFileTypes && allowedFileTypes.length) {
-    const types = allowedFileTypes
-        .map(type => type.replace('.', ''))
-        .join('، ');
-    parts.push(`فقط فایل‌های ${types}`);
-  }
+        function showError(message) {
+            if (props.errorHandler) return props.errorHandler(message);
+            if (!message) return;
+            errorMessage.value = message;
+            d.timeout(() => (errorMessage.value = null), 3000);
+        }
 
-  if (maxNumberOfFiles && maxNumberOfFiles > 1) {
-    parts.push(`امکان انتخاب حداکثر ${maxNumberOfFiles} فایل`);
-  }
+        function buildCaption(r) {
+            if (!r) return '';
+            const parts = [];
 
-  if (minNumberOfFiles) {
-    parts.push(`حداقل ${minNumberOfFiles} فایل نیاز است`);
-  }
+            if (r.allowedFileTypes?.length) {
+                parts.push(t('uppy.types', { types: r.allowedFileTypes.map((x) => x.replace('.', '')).join(', ') }));
+            }
+            if (r.maxNumberOfFiles && r.maxNumberOfFiles > 1) parts.push(t('uppy.maxFiles', { count: r.maxNumberOfFiles }));
+            if (r.minNumberOfFiles) parts.push(t('uppy.minFiles', { count: r.minNumberOfFiles }));
+            if (r.maxFileSize) parts.push(t('uppy.maxSize', { size: niceBytes(r.maxFileSize) }));
+            if (r.minFileSize) parts.push(t('uppy.minSize', { size: niceBytes(r.minFileSize) }));
+            if (r.maxTotalFileSize) parts.push(t('uppy.maxTotal', { size: niceBytes(r.maxTotalFileSize) }));
 
-  if (maxFileSize) {
-    parts.push(`با حداکثر حجم ${niceBytes(maxFileSize)} برای هر فایل`);
-  }
+            return parts.length ? `${parts.join(', ')} ${t('uppy.suffix')}` : '';
+        }
 
-  if (minFileSize) {
-    parts.push(`با حداقل حجم ${niceBytes(minFileSize)} برای هر فایل`);
-  }
+        onMounted(async () => {
+            const { default: Uppy } = await import('@uppy/core');
+            if (d.isDisposed()) return;
 
-  if (maxTotalFileSize) {
-    parts.push(`و مجموع حجم کل حداکثر ${niceBytes(maxTotalFileSize)}`);
-  }
+            const instance = new Uppy({
+                id: props.name ?? 'uppy',
+                autoProceed: true,
+                ...props.config,
+                restrictions: {
+                    maxNumberOfFiles: props.multiple ? null : 1,
+                    ...(props.config?.restrictions || {}),
+                },
+            });
 
-  if (!parts.length) return '';
+            instance.on('upload', () => {
+                uploadingFiles.value = instance.getFiles().filter((f) => !f.progress.uploadComplete).length;
+                emit('upload');
+            });
+            instance.on('before-upload', (files) => emit('beforeUpload', files));
 
-  return parts.join('، ') + ' مجاز است.';
-}
+            instance.on('upload-success', (file, response) => {
+                uploadingFiles.value = Math.max(0, uploadingFiles.value - 1);
+                const result = response.body ?? response;
+
+                if (props.multiple) {
+                    const current = Array.isArray(field.model.value) ? field.model.value : [];
+                    field.model.value = [...current, result];
+                } else {
+                    field.model.value = result;
+                }
+                field.emitChange(field.model.value);
+                emit('upload-success', file, response);
+            });
+
+            instance.on('file-added', (file) => emit('file-added', file));
+
+            instance.on('file-removed', (file) => {
+                const serverResponse = file.response?.body ?? file.response;
+
+                if (props.multiple && Array.isArray(field.model.value)) {
+                    field.model.value = field.model.value.filter((item) => JSON.stringify(item) !== JSON.stringify(serverResponse));
+                } else {
+                    field.model.value = null;
+                }
+                field.emitChange(field.model.value);
+
+                if (serverResponse && !resetting && !unmounting) {
+                    fetch(props.url, {
+                        method: 'DELETE',
+                        headers: laravelHeaders({ 'Content-Type': 'application/json' }),
+                        credentials: 'same-origin',
+                        body: JSON.stringify(serverResponse),
+                    }).catch(() => {});
+                }
+                emit('file-removed', file);
+            });
+
+            instance.on('progress', (progress) => {
+                if (progress <= 0) setUploading(null);
+                else if (progress >= 100) setUploading(uploadingFiles.value > 0 ? 99 : null); // still waiting for the server
+                else setUploading(progress);
+                emit('progress', progress);
+            });
+
+            instance.on('upload-progress', (file, progress) => emit('upload-progress', file, progress));
+            instance.on('upload-pause', (file, progress) => emit('upload-pause', file, progress));
+            instance.on('cancel-all', () => emit('cancel-all'));
+            instance.on('retry-all', () => emit('retry-all'));
+            instance.on('upload-stalled', (error, files) => emit('upload-stalled', error, files));
+            instance.on('upload-retry', (file) => emit('upload-retry', file));
+            instance.on('complete', (result) => {
+                uploadingFiles.value = 0;
+                setUploading(null);
+                emit('complete', result);
+            });
+            instance.on('error', (error) => emit('error', error));
+
+            instance.on('upload-error', (file, error, response) => {
+                uploadingFiles.value = Math.max(0, uploadingFiles.value - 1);
+                let message = error;
+                try {
+                    message = JSON.parse(response.response)?.message ?? error;
+                } catch (e) { /* not json */ }
+                showError(message?.message ?? message);
+                emit('upload-error', file, error, response, message);
+            });
+
+            instance.on('restriction-failed', (file, error) => {
+                showError(error.message);
+                emit('restriction-failed', file, error);
+            });
+
+            if (props.useXHR) {
+                const { default: XHR } = await import('@uppy/xhr-upload');
+                if (d.isDisposed()) {
+                    instance.destroy?.();
+                    return;
+                }
+                instance.use(XHR, {
+                    method: 'POST',
+                    endpoint: props.url,
+                    headers: laravelHeaders(),
+                    ...props.XHRConfig,
+                });
+            }
+
+            d.add(() => {
+                unmounting = true;
+                setUploading(null);
+                try { instance.destroy?.(); } catch (e) { /* noop */ }
+                uppy.value = null;
+            });
+
+            uppy.value = instance;
+            if (props.showRestrictionCaption) caption.value = buildCaption(instance.opts?.restrictions);
+            emit('ready', instance);
+        });
+
+        // Form was submitted successfully → forget the files without touching the server
+        watch(
+            () => field.form.value?.wasSuccessful,
+            (now, before) => {
+                if (now === true && before === false && uppy.value) {
+                    resetting = true;
+                    uppy.value.cancelAll();
+                    resetting = false;
+                    field.model.value = props.multiple ? [] : null;
+                }
+            }
+        );
+
+        expose({ uppy: () => uppy.value });
+
+        return { ...field, uppy, area, caption, errorMessage };
+    },
+});
 </script>
 
-<style>
-.uppy-reset p {
-  margin-bottom: 0;
-}
-
-.uppy-file-lists > ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.uppy-input-area .uppy-error {
-  display: block;
-  padding: 5px;
-  background-color: #f8d7da;
-  border: 1px solid #f5c2c7;
-  color: #842029;
-  text-align: center;
-  border-radius: 0.5rem;
-  margin-bottom: 5px;
-}
-
-.uppy-input-area .uppy-input-area--caption {
-  text-align: center;
-  margin: 5px 0;
-}
-</style>
+<template>
+    <div v-if="uppy" ref="area" class="uppy-input-area" :id="inputId">
+        <div v-if="errorMessage" class="alert theme-danger text-center py-1 mb-2" role="alert">{{ errorMessage }}</div>
+        <UppyContextProvider :name="'uu' + (name ?? 'uppy')" :uppy="uppy">
+            <slot :uppy="uppy">
+                <FilesList class="uppy-file-lists" />
+                <UppyDropzone class="uppy-drop-zone" />
+            </slot>
+        </UppyContextProvider>
+        <div v-if="caption" class="uppy-input-area--caption form-text text-center fst-italic">{{ caption }}</div>
+        <div v-if="isInvalid" class="invalid-feedback d-block">{{ error }}</div>
+    </div>
+</template>

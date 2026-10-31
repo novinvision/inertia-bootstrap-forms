@@ -1,130 +1,96 @@
 <script>
-import {VueTelInput} from 'vue-tel-input';
-import 'vue-tel-input/vue-tel-input.css';
-import {defineComponent, inject} from "vue";
+import { computed, defineAsyncComponent, defineComponent, ref, watch } from 'vue';
+import { fieldProps, useField } from './composables/useField.js';
 
+const VueTelInput = defineAsyncComponent(() => import('vue-tel-input').then((m) => m.VueTelInput));
+
+/**
+ * International phone input (vue-tel-input). The stored value is the international number (E.164 style).
+ * Remember to import `vue-tel-input/vue-tel-input.css` in your application.
+ */
 export default defineComponent({
-  components: {
-    VueTelInput
-  },
-  props: {
-    name: {
-      type: String,
-      default: 'email',
-      required: true,
+    name: 'TelInput',
+    components: { VueTelInput },
+    emits: ['update:modelValue', 'change', 'validate', 'country-changed', 'focus', 'blur'],
+    props: {
+        ...fieldProps,
+        placeholder: { type: String, default: '000 000 0000' },
+        /** Legacy alias of `placeholder`. */
+        placeHolder: { type: String, default: null },
+        defaultCountry: { type: String, default: 'ir' },
+        preferredCountries: { type: Array, default: () => ['ir', 'us', 'tr', 'ca'] },
+        mode: { type: String, default: 'national' },
+        validCharactersOnly: { type: Boolean, default: true },
+        /** Mark the field invalid as soon as the typed number is not valid. */
+        validate: { type: Boolean, default: true },
+        searchPlaceholder: { type: String, default: 'Search…' },
+        dropdownOptions: { type: Object, default: () => ({}) },
+        inputOptions: { type: Object, default: () => ({}) },
     },
-    placeHolder: {
-      type: String,
-      default: '000 000 0000',
-    },
-  },
-  setup(props) {
-    let form = inject('form');
+    setup(props, { emit }) {
+        const field = useField(props, emit);
+        const text = ref(field.model.value ?? '');
+        const valid = ref(null);
+        let lastEmitted = field.model.value ?? '';
 
-    if (form === undefined) {
-      form = {
-        errors: {},
-        getID(name) {
+        // External changes (form reset, server data) → refresh the visible text
+        watch(
+            () => field.model.value,
+            (v) => {
+                if ((v ?? '') !== lastEmitted) text.value = v ?? '';
+            }
+        );
+
+        function onInput(number, phone) {
+            lastEmitted = phone?.number ?? '';
+            field.model.value = lastEmitted;
+            valid.value = phone?.valid ?? null;
+            emit('validate', valid.value, phone);
+            field.emitChange(lastEmitted);
         }
-      };
-    }
 
-    return {form};
-  },
-  methods: {
-    inputEvent(number, phone) {
-      this.form[this.name] = phone.number;
-      this.valid = phone.valid;
-      // console.log('input', number, phone);
-    }
-  },
-  data() {
-    return {
-      defaultValue: this.form[this.name],
-      valid: null,
-    }
-  }
-})
+        return {
+            ...field,
+            text,
+            valid,
+            onInput,
+            dropdown: computed(() => ({
+                showDialCodeInList: true,
+                showDialCodeInSelection: true,
+                showSearchBox: true,
+                searchBoxPlaceholder: props.searchPlaceholder,
+                showFlags: false,
+                ...props.dropdownOptions,
+            })),
+            inputOpts: computed(() => ({
+                placeholder: props.placeHolder ?? props.placeholder,
+                id: field.inputId.value,
+                name: props.name,
+                readonly: props.readonly,
+                ...props.inputOptions,
+            })),
+            invalidClass: computed(() => field.isInvalid.value || (props.validate && valid.value === false)),
+        };
+    },
+});
 </script>
+
 <template>
-  <div class="telephone-input input-group fanum" dir="ltr">
-    <vue-tel-input
-        mode="national"
-        :validCharactersOnly="true"
-        defaultCountry="ir"
-        :preferredCountries="['ir', 'us', 'tr', 'ca']"
-        :dropdownOptions="{
-            showDialCodeInList:true,
-            showDialCodeInSelection:true,
-            showSearchBox:true,
-            searchBoxPlaceholder:'Search...',
-            showFlags:false,
-        }"
-        @on-input="inputEvent"
-        :inputOptions="{
-            placeholder: placeHolder
-        }"
-        v-model="defaultValue"
-        :styleClasses="'form-control form-control-tel fanum ' + ((valid === false || form?.errors[name] !== undefined) ? ' is-invalid' : '')"/>
-  </div>
+    <div class="telephone-input input-group fanum" dir="ltr">
+        <VueTelInput
+            v-model="text"
+            :mode="mode"
+            :valid-characters-only="validCharactersOnly"
+            :default-country="defaultCountry"
+            :preferred-countries="preferredCountries"
+            :disabled="isDisabled"
+            :dropdown-options="dropdown"
+            :input-options="inputOpts"
+            :style-classes="'form-control form-control-tel fanum' + (invalidClass ? ' is-invalid' : '')"
+            @on-input="onInput"
+            @country-changed="$emit('country-changed', $event)"
+            @focus="$emit('focus', $event)"
+            @blur="$emit('blur', $event)"
+        />
+    </div>
 </template>
-<style>
-.telephone-input .vue-tel-input {
-  border-color: var(--bs-border-color, #ccc);
-  border-width: var(--bs-border-width, 1px);
-  border-radius: var(--bs-border-radius, .5rem);
-}
-
-.telephone-input .vti__input.vti__search_box {
-  border: 0;
-  font-size: var(--bs-body-font-size, .9rem);
-  background: var(--bs-tertiary-bg, #eee);
-  border-radius: var(--bs-border-radius, .5rem);
-}
-
-.telephone-input .vti__search_box_container {
-  display: flex;
-}
-
-.telephone-input .vti__dropdown {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  border-radius: 0 var(--bs-border-radius) var(--bs-border-radius) 0;
-  padding: 7px 7px 7px 0;
-}
-
-.telephone-input .vti__input.vti__phone {
-  padding-right: 3rem;
-}
-
-.telephone-input .vti__dropdown-list {
-  padding: 0 !important;
-  left: auto;
-  right: 0;
-}
-
-.telephone-input .vti__dropdown-list .vti__dropdown-item {
-  direction: rtl;
-  text-align: right;
-}
-
-.telephone-input .vti__dropdown-list .vti__dropdown-item strong {
-  font-weight: normal;
-}
-
-.telephone-input .vti__selection {
-  font-size: inherit;
-}
-
-.telephone-input .form-control.is-invalid {
-  padding-right: 0.75rem;
-  background-position: left calc(0.425em + 0.25rem) center;
-}
-
-.telephone-input .vti__dropdown-arrow {
-  margin: 0 4px;
-}
-
-</style>

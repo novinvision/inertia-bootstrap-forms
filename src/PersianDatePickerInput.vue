@@ -1,183 +1,80 @@
 <script>
-import {computed, defineAsyncComponent, defineComponent, inject} from "vue";
+import { defineAsyncComponent, defineComponent, onMounted, ref, watch } from 'vue';
+import { fieldProps, useField } from './composables/useField.js';
 
-const Vue3PersianDatetimePicker = defineAsyncComponent(() =>
-    import('vue3-persian-datetime-picker')
-);
+const Vue3PersianDatetimePicker = defineAsyncComponent(() => import('vue3-persian-datetime-picker'));
 
-let _this;
+/**
+ * Jalali (Persian) date / time picker based on vue3-persian-datetime-picker.
+ * Bootstrap 6's own Datepicker does not support the Jalali calendar, so this library is kept on purpose.
+ */
 export default defineComponent({
-  components: {Vue3PersianDatetimePicker},
-  emits: ['update:modelValue', 'change'],
-  props: {
-    name: {
-      type: String,
-      required: true,
+    name: 'PersianDatePickerInput',
+    components: { Vue3PersianDatetimePicker },
+    emits: ['update:modelValue', 'change', 'open', 'close'],
+    props: {
+        ...fieldProps,
+        /** date | datetime | time | year-month | month */
+        calendar: { type: String, default: 'date' },
+        view: { type: String, default: 'date' },
+        min: { type: String, default: null },
+        max: { type: String, default: null },
+        range: { type: Boolean, default: false },
+        locale: { type: String, default: 'fa' },
+        /** Format of the stored value. */
+        format: { type: String, default: 'jYYYY/jMM/jDD' },
+        /** Format shown in the input (defaults to `format`). */
+        inputFormat: { type: String, default: null },
+        placeholder: { type: String, default: null },
+        inputClass: { type: String, default: 'form-control fanum' },
+        /** Extra props forwarded to vue3-persian-datetime-picker. */
+        pickerOptions: { type: Object, default: () => ({}) },
     },
-    calendar: {
-      type: String,
-      default: 'date',
-    },
-    view: {
-      type: String,
-      default: 'date',
-    },
-    disabled: Boolean,
-    min: String,
-    max: String,
-    range: Boolean,
-    locale: {
-      default: 'fa',
-    },
-    format: {
-      type: String,
-      default: 'jYYYY/jMM/jDD',
-    },
-    inputFormat: {
-      type: String,
-      default: null,
-    },
-    simple: {
-      type: Boolean,
-      default: false,
-    },
-    placeholder: String,
-  },
-  setup(props) {
-    let form = inject('form', {
-      errors: {},
-      getID(name) {
-        return name;
-      }
-    });
-    let group = inject('group', {});
+    setup(props, { emit, expose }) {
+        const field = useField(props, emit);
+        const ready = ref(false);
 
-    const modelValue = computed({
-      get() {
-        return (group.value && form.value[group.value.name]) ? group.value?.getData(props.name) : form.value[props.name];
-      },
-      set(value) {
-        if (group?.value?.name) {
-          group.value.setData(props.name, value);
-        } else {
-          form.value[props.name] = value;
-        }
-      }
-    });
+        onMounted(() => {
+            ready.value = true; // the picker needs the DOM, so it is never rendered during SSR
+        });
 
-    return {modelValue, form, group};
-  },
-  watch: {
-    modelValue: (newVal, oldVal) => {
-      _this?.$emit('change', newVal, oldVal);
-    }
-  },
-  methods: {
-    clear() {
-      this.modelValue = null;
+        watch(
+            () => field.model.value,
+            (now, before) => emit('change', now, before)
+        );
+
+        expose({ clear: () => (field.model.value = null) });
+
+        return { ...field, ready };
     },
-  },
-  mounted() {
-    _this = this;
-  },
-  computed: {
-    isSsr() {
-      return !window || typeof window === 'undefined';
-    },
-    inputID() {
-      return this.form.getID(this)
-    }
-  },
-  data() {
-    return {}
-  }
-})
+});
 </script>
 
 <template>
-  <template v-if="!isSsr">
-
     <Vue3PersianDatetimePicker
-        v-model="modelValue"
+        v-if="ready"
+        v-model="model"
+        :name="name"
+        :id="inputId"
         :type="calendar"
+        :view="view"
+        :min="min"
+        :max="max"
+        :range="range"
+        :locale="locale"
+        :format="format"
+        :input-format="inputFormat || format"
+        :placeholder="placeholder"
+        :disabled="isDisabled || readonly"
+        :input-class="[inputClass, { 'is-invalid': isInvalid }]"
         editable
         jumpminute="15"
-        :disabled="form?.processing || disabled"
         :roundminute="true"
-        :showNowBtn="true"
-        :autoSubmit="true"
-        :inputFormat="(inputFormat ? inputFormat : format)"
-        input-class="form-control fanum"
-        v-bind="$props"/>
-  </template>
-
+        :show-now-btn="true"
+        :auto-submit="true"
+        v-bind="pickerOptions"
+        @open="$emit('open')"
+        @close="$emit('close')"
+    />
+    <input v-else type="text" class="form-control" :class="{ 'is-invalid': isInvalid }" :placeholder="placeholder" disabled />
 </template>
-<style>
-.vpd-main .vpd-input-group {
-  display: block !important;
-}
-
-.vpd-main .vpd-input-group input {
-  padding: 0.375rem 0.75rem !important;
-  border-radius: var(--bs-border-radius, .5rem) !important;
-  line-height: var(--bs-body-line-height, 1.5) !important;
-  border: 1px solid var(--bs-border-color, #dadada) !important
-}
-
-.vpd-main .vpd-icon-btn {
-  position: absolute;
-  right: 5px;
-  left: auto;
-  top: 0;
-  bottom: 0;
-  height: 30px;
-  min-width: 40px;
-  border: 1px solid var(--bs-secondary) !important;
-  background-color: var(--bs-secondary-bg) !important;
-  color: var(--bs-body-color, #000) !important;
-  border-radius: var(--bs-border-radius, .5rem);
-  margin: auto;
-  transition: all ease 0.3s;
-}
-
-.vpd-main .vpd-icon-btn svg {
-  fill: var(--bs-body-color, #000) !important;
-  transition: all ease 0.3s;
-}
-
-.vpd-main .vpd-icon-btn:hover {
-  background-color: var(--bs-secondary) !important;
-  color: var(--bs-body-color) !important;
-}
-
-.vpd-main .vpd-icon-btn:hover svg {
-  fill: var(--bs-body-bg, #000) !important;
-}
-
-.vpd-content {
-  color: var(--bs-body-color) !important;
-  background-color: var(--bs-body-bg) !important;
-  -moz-font-feature-settings: "ss01";
-  -webkit-font-feature-settings: "ss01";
-  font-feature-settings: "ss01";
-}
-
-.vpd-time .vpd-down-arrow-btn, .vpd-time .vpd-up-arrow-btn {
-  text-align: center;
-}
-
-.vpd-time .vpd-down-arrow-btn svg,
-.vpd-time .vpd-up-arrow-btn svg {
-  margin: 0 auto;
-}
-
-.vpd-controls button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.vpd-month-label {
-  width: 110px;
-}
-</style>

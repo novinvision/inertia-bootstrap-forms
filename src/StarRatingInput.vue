@@ -1,158 +1,134 @@
 <script>
-import {defineComponent, inject} from 'vue';
+import { computed, defineComponent, onMounted, ref } from 'vue';
+import { fieldProps, useField } from './composables/useField.js';
 
+/** Star rating with fractional precision, pointer + keyboard support and RTL awareness. */
 export default defineComponent({
-    emits: ['update:modelValue'],
+    name: 'StarRatingInput',
+    emits: ['update:modelValue', 'change', 'hover'],
     props: {
-        name: {
-            type: String,
-            default: null,
-        },
-        modelValue: {
-            type: Number,
-            default: 0
-        },
-        value: {
-            type: Number,
-            default: 0
-        },
-        maxStars: {
-            type: Number,
-            default: 5
-        },
-        precision: {
-            type: Number,
-            default: 2
-        },
-        showValue: {
-            type: Boolean,
-            default: true
-        },
-        readonly: {
-            type: Boolean,
-            default: false
-        },
+        ...fieldProps,
+        /** Initial rating used when the model is empty. */
+        value: { type: Number, default: 0 },
+        maxStars: { type: Number, default: 5 },
+        /** Steps per star: 1 = whole stars, 2 = half stars, 4 = quarter stars… */
+        precision: { type: Number, default: 2 },
+        showValue: { type: Boolean, default: true },
+        /** Allow clicking the current rating again to reset it to 0. */
+        clearable: { type: Boolean, default: false },
     },
-    setup(props) {
-        let form = inject('form');
-        if (form === undefined) {
-            form = {
-                errors: {},
-                getID(name) {
-                }
-            };
+    setup(props, { emit }) {
+        const field = useField(props, emit);
+        const container = ref(null);
+        const hovered = ref(null);
+        const isRTL = ref(false);
+
+        onMounted(() => {
+            if (container.value) isRTL.value = getComputedStyle(container.value).direction === 'rtl';
+        });
+
+        const locked = computed(() => props.readonly || field.isDisabled.value);
+        const stored = computed(() => {
+            const n = Number(field.model.value);
+            return field.model.value === null || field.model.value === undefined || Number.isNaN(n) ? props.value : n;
+        });
+        const rating = computed(() => hovered.value ?? stored.value);
+        const step = computed(() => 1 / props.precision);
+
+        const fillOf = (star) => Math.max(0, Math.min(1, rating.value - (star - 1))) * 100;
+
+        function ratingFromPointer(event) {
+            const rect = container.value.getBoundingClientRect();
+            const offset = isRTL.value ? rect.right - event.clientX : event.clientX - rect.left;
+            const starWidth = rect.width / props.maxStars;
+            const raw = Math.ceil((offset / starWidth) * props.precision) / props.precision;
+            return Math.min(props.maxStars, Math.max(step.value, raw));
         }
-        return {form};
-    },
-    computed: {
-        displayRating() {
-            return (this.hoveredRating ?? (this.modelValue ?? (this.name ? this.form[this.name] : null)) ?? this.value).toFixed(1);
+
+        function onMove(event) {
+            if (locked.value) return;
+            hovered.value = ratingFromPointer(event);
+            emit('hover', hovered.value);
         }
-    },
-    methods: {
-        getStarFill(star) {
-            const rating = this.hoveredRating ?? (this.modelValue || this.form[this.name]);
-            const fullStars = Math.floor(rating);
-            const remainder = rating - fullStars;
 
-            if (star <= fullStars) return 100;
-            if (star === fullStars + 1) return remainder * 100;
-            return 0;
-        },
-        setHover(event) {
-            if (this.readonly) return;
+        function leave() {
+            hovered.value = null;
+        }
 
-            const rect = this.$refs.ratingContainer.getBoundingClientRect();
-            let offsetX = event.clientX - rect.left;
+        function commit(next, event) {
+            if (locked.value) return;
+            const value = props.clearable && next === stored.value ? 0 : next;
+            field.model.value = value;
+            field.emitChange(value, event);
+        }
 
-            if (this.isRTL) {
-                offsetX = rect.width - (event.clientX - rect.left); // اصلاح برای حالت راست‌چین
+        function onClick(event) {
+            if (locked.value) return;
+            commit(ratingFromPointer(event), event);
+        }
+
+        function onKeydown(event) {
+            if (locked.value) return;
+            const forward = isRTL.value ? 'ArrowLeft' : 'ArrowRight';
+            const backward = isRTL.value ? 'ArrowRight' : 'ArrowLeft';
+            let next = null;
+
+            if (event.key === forward || event.key === 'ArrowUp') next = stored.value + step.value;
+            else if (event.key === backward || event.key === 'ArrowDown') next = stored.value - step.value;
+            else if (event.key === 'Home') next = 0;
+            else if (event.key === 'End') next = props.maxStars;
+
+            if (next !== null) {
+                event.preventDefault();
+                commit(Math.min(props.maxStars, Math.max(0, Number(next.toFixed(4)))), event);
             }
-
-            const starWidth = rect.width / this.maxStars;
-            let newRating = Math.round((offsetX / starWidth) * this.precision) / this.precision;
-            newRating = Math.min(newRating, this.maxStars);
-
-            this.hoveredRating = newRating;
-        },
-        updateRating() {
-            if (this.readonly) return;
-
-            if (this.name) this.form[this.name] = this.hoveredRating.toFixed(1);
-            this.$emit('update:modelValue', this.hoveredRating.toFixed(1));
-        },
-        resetHover() {
-            if (this.readonly) return;
-
-            this.hoveredRating = null;
         }
-    },
-    mounted() {
-        if (typeof window !== 'undefined' && this.$refs.ratingContainer) {
-            this.isRTL = getComputedStyle(this.$refs.ratingContainer).direction === 'rtl';
-        }
-    },
-    data() {
+
         return {
-            hoveredRating: parseFloat(this.modelValue || ((this.name ? this.form[this.name] : null) ?? this.value)),
-            isRTL: false,
-        }
-    }
-})
+            ...field,
+            container,
+            rating,
+            stored,
+            fillOf,
+            onMove,
+            leave,
+            onClick,
+            onKeydown,
+            locked,
+            display: computed(() => rating.value.toFixed(1)),
+        };
+    },
+});
 </script>
+
 <template>
-    <div class="star-rating">
-        <div class="star-rating-container" ref="ratingContainer" @mouseleave="resetHover" @mousemove="setHover" @click="updateRating">
-            <div v-for="star in maxStars" :key="star" class="star-wrapper">
-                <div class="star-bg">★</div>
-                <span class="star-overlay" :style="{ width: getStarFill(star) + '%' }">★</span>
-            </div>
+    <div class="star-rating d-flex align-items-center gap-2" :class="{ 'is-invalid': isInvalid }">
+        <div
+            ref="container"
+            class="star-rating-container d-flex position-relative"
+            role="slider"
+            :tabindex="locked ? -1 : 0"
+            :aria-valuemin="0"
+            :aria-valuemax="maxStars"
+            :aria-valuenow="stored"
+            :aria-readonly="locked || undefined"
+            :aria-invalid="isInvalid || undefined"
+            :style="{ cursor: locked ? 'default' : 'pointer' }"
+            @pointermove="onMove"
+            @pointerleave="leave"
+            @click="onClick"
+            @keydown="onKeydown"
+        >
+            <span v-for="star in maxStars" :key="star" class="star-wrapper position-relative d-inline-block fs-2xl lh-1">
+                <span class="star-bg fg-secondary opacity-50" aria-hidden="true">★</span>
+                <span
+                    class="star-overlay fg-warning"
+                    aria-hidden="true"
+                    :style="{ position: 'absolute', top: 0, insetInlineStart: 0, overflow: 'hidden', whiteSpace: 'nowrap', width: fillOf(star) + '%' }"
+                >★</span>
+            </span>
         </div>
-        <div class="rating-value fanum" v-if="showValue && displayRating> 0">{{ displayRating }}</div>
+        <input v-if="name" type="hidden" :name="name" :value="stored" />
+        <span v-if="showValue && rating > 0" class="rating-value fanum">{{ display }}</span>
     </div>
 </template>
-
-<style>
-.star-rating,
-.star-rating-container {
-    display: flex;
-    align-items: center;
-}
-
-.star-rating {
-    gap: 8px;
-}
-
-.star-rating .star-rating-container {
-    cursor: pointer;
-    position: relative;
-}
-
-.star-rating .star-wrapper {
-    position: relative;
-    font-size: 28px;
-    line-height: 1;
-    display: inline-block;
-}
-
-.star-rating .star-bg {
-    color: #ccc;
-}
-
-.star-rating .star-overlay {
-    position: absolute;
-    top: 0;
-    left: 0; /* 👈 اصلاح برای RTL */
-    overflow: hidden;
-    color: gold;
-    white-space: nowrap;
-    width: 0;
-    transition: width 0.2s ease-in-out;
-}
-
-.star-rating .rating-value {
-    font-size: 18px;
-    color: #444;
-    margin-right: 8px;
-}
-</style>

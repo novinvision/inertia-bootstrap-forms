@@ -1,507 +1,143 @@
-import { defineComponent } from 'vue';
+import type { DefineComponent, Plugin, ComputedRef, Ref, PropType } from 'vue';
 
-// Import کامپوننت‌ها
-import AmountInput from './src/AmountInput.vue';
-import CaptchaInput from './src/CaptchaInput.vue';
-import CheckboxButtonInput from './src/CheckboxButtonInput.vue';
-import CheckboxInput from './src/CheckboxInput.vue';
-import CheckboxToggle from './src/CheckboxToggle.vue';
-import SwitchInput from './src/SwitchInput.vue';
-import EditorInput from './src/EditorInput.vue';
-import EmailInput from './src/EmailInput.vue';
-import FileInput from './src/FileInput.vue';
-import SimpleUploader from './src/SimpleUploader.vue';
-import UppyInput from './src/UppyInput.vue';
-import FormContainer from './src/FormContainer.vue';
-import FormLabel from './src/FormLabel.vue';
-import GroupControl from './src/GroupControl.vue';
-import LocationInput from './src/LocationInput.vue';
-import MobileInput from './src/MobileInput.vue';
-import MultiQuantityInput from './src/MultiQuantityInput.vue';
-import PasswordInput from './src/PasswordInput.vue';
-import PersianDatePickerInput from './src/PersianDatePickerInput.vue';
-import QuantityInput from './src/QuantityInput.vue';
-import Select2Input from './src/Select2Input.vue';
-import StarRatingInput from './src/StarRatingInput.vue';
-import SubmitButton from './src/SubmitButton.vue';
-import TelInput from './src/TelInput.vue';
-import TextAreaInput from './src/TextAreaInput.vue';
-import TextInput from './src/TextInput.vue';
-import OTPInput from './src/OTPInput.vue';
-import DropzoneInput from './src/DropzoneInput.vue';
-import { countryCodes } from './src/countryCodes';
-
-// Export تکی
-export {
-    AmountInput,
-    CaptchaInput,
-    CheckboxButtonInput,
-    CheckboxInput,
-    CheckboxToggle,
-    SwitchInput,
-    countryCodes,
-    EditorInput,
-    EmailInput,
-    DropzoneInput,
-    UppyInput,
-    FileInput,
-    SimpleUploader,
-    FormContainer,
-    FormLabel,
-    GroupControl,
-    LocationInput,
-    MobileInput,
-    MultiQuantityInput,
-    PasswordInput,
-    PersianDatePickerInput,
-    QuantityInput,
-    Select2Input,
-    StarRatingInput,
-    SubmitButton,
-    TelInput,
-    TextAreaInput,
-    TextInput,
-    OTPInput,
-    Quantity,
-    File,
-};
-
-// Export پیش‌فرض برای import * as
-const Vue3FormComponents = {
-    AmountInput,
-    CaptchaInput,
-    CheckboxButtonInput,
-    CheckboxInput,
-    CheckboxToggle,
-    countryCodes,
-    EditorInput,
-    DropzoneInput,
-    UppyInput,
-    EmailInput,
-    FileInput,
-    SimpleUploader,
-    FormContainer,
-    FormLabel,
-    GroupControl,
-    LocationInput,
-    MobileInput,
-    MultiQuantityInput,
-    PasswordInput,
-    PersianDatePickerInput,
-    QuantityInput,
-    Select2Input,
-    StarRatingInput,
-    SubmitButton,
-    TelInput,
-    TextAreaInput,
-    TextInput,
-    OTPInput,
-};
-
-export default Vue3FormComponents;
-
-import { DefineComponent } from 'vue';
-
-export const AmountInput: DefineComponent<{}, {}, any>;
-export const CaptchaInput: DefineComponent<{}, {}, any>;
-export const CheckboxButtonInput: DefineComponent<{
-    name: {
-        type: String,
-        required: true,
-    },
-    id: {
-        type: String,
-        default: '',
-        required: false,
-    },
-    value: {
-        type: String,
-        default: 'yes',
-        required: false,
-    },
-    type: {
-        type: String,
-        default: 'radio',
-        required: false,
-    },
-}, {}, any>;
-export const CheckboxInput: DefineComponent<{}, {}, any>;
-export const CheckboxToggle: DefineComponent<{
-    name: {
-        type: String,
-        required: true,
-    },
-    id: {
-        type: String,
-        default: '',
-        required: false,
-    },
-    value: {
-        type: [String, Number],
-        default: 'yes',
-        required: false,
-    },
-    type: {
-        type: String,
-        default: 'checkbox',
-        required: false,
-    },
-    disabled: {
-        type: Boolean,
-        default: false,
-    },
-    readonly: {
-        type: Boolean,
-        default: false,
-    },
-    hideInput: {
-        type: Boolean,
-        default: false,
-    }
-}, {}, any>;
-export const SwitchInput: DefineComponent<{}, {}, any>;
-export const countryCodes: any;
-export const EditorInput: DefineComponent<{
-    name: {
-        type: String,
-        required: true,
-    },
-    modelValue: String,
-    placeholder: {
-        type: String,
-        default: 'اینجا بنویسید...',
-    },
-    invalid: Boolean,
-    allowLink: Boolean,
-    height: Number,
-    minHeight: Number,
-    useStyle: {
-        type: Boolean,
-        default: false,
-    },
-    modules: {
-        default: [],
-        required: false,
-    },
-    options: {
-        type: Object,
-        default: {},
-        required: false,
-    },
-}, {}, any>;
-export const EmailInput: DefineComponent<{}, {}, any>;
-export const DropzoneInput: DefineComponent<{}, {}, any>;
-export const UppyInput: DefineComponent<{
-    name: {
-        type: String,
-        required: true,
-    },
-    multiple: {
-        type: Boolean,
-        default: false,
-    },
-    showRestrictionCaption: {
-        type: Boolean,
-        default: true,
-    },
-    errorHandler: {type: Function, default: null},
-    config: {type: Object, default: () => ({})},
-    modelValue: String,
-    XHRConfig: {type: Object, default: {}},
-    useXHR: {type: Boolean, default: true},
-    url: { type: String, default: "/upload" },
-},   {},
-    any,
-    {},
-    {},
-    {},
-    {},
-    {
-        'update:modelValue': (value: string) => void,
-        'file-added': (file) => void,
-        'file-removed': (file) => void,
-        'beforeUpload': (files) => void,
-        'progress': (progress) => void,
-        'upload': (uploadID, file) => void,
-        'upload-progress': (file, progress) => void,
-        'upload-error': (file, error, response) => void,
-        'upload-success': (file, response) => void,
-        'upload-pause': (file, isPaused) => void,
-        'complete': (result) => void,
-        'error': (error) => void,
-        'upload-retry': (file) => void,
-        'upload-stalled': (error, files) => void,
-        'retry-all': (files) => void,
-        'cancel-all': () => void,
-        'restriction-failed': (file, error) => void,
-    }
->;
-export const FileInput: DefineComponent<{}, {}, any>;
-export const SimpleUploader: DefineComponent<{}, {}, any>;
-export const FormContainer: DefineComponent<{
-    url: {
-        type: String,
-        default: '',
-        required: false,
-    },
-    method: {
-        default: 'post'
-    },
-    autoTab: {
-        type: Boolean,
-        default: true,
-    },
-    only: {
-        type: Array,
-        default: [],
-        required: false,
-    },
-    modelValue: {
-        type: Object,
-        default: {},
-        required: false,
-    },
-    options: {
-        type: Object,
-        default: {},
-        required: false,
-    },
-    resetOnSuccess: {
-        type: Boolean,
-        default: false,
-    },
-    submitHandler: {
-        type: Function,
-        default: null,
-        required: false,
-    },
-}, {}, any,
-    {},
-    {},
-    {},
-    {},
-    {
-        'update:modelValue': (data) => void,
-        'submit': (event) => void,
-        'reset': (file) => void,
-        'onStart': () => void,
-        'onFinish': (data) => void,
-        'onSuccess': (data) => void,
-        'onError': (errors) => void,
-        'change': (data) => void,
-    }
->;
-export const FormLabel: DefineComponent<{}, {}, any>;
-export const GroupControl: DefineComponent<{}, {}, any>;
-export const LocationInput: DefineComponent<{
-    name: {
-        type: String,
-        default: 'location',
-        required: false,
-    },
-    disabled: {
-        type: [Boolean, String],
-        default: false,
-    },
-    readonly: {
-        type: [Boolean, String],
-        default: false,
-    },
-}, {}, any>;
-export const MobileInput: DefineComponent<{}, {}, any>;
-export const MultiQuantityInput: DefineComponent<{}, {}, any>;
-export const PasswordInput: DefineComponent<{}, {}, any>;
-export const PersianDatePickerInput: DefineComponent<{
-    name: {
-        type: String,
-        required: true,
-    },
-    calendar: {
-        type: String,
-        default: 'date',
-    },
-    view: {
-        type: String,
-        default: 'date',
-    },
-    min: String,
-    max: String,
-    range: Boolean,
-    locale: {
-        default: 'fa',
-    },
-    format: {
-        type: String,
-        default: 'jYYYY-jMM-jDD',
-    },
-    inputFormat: {
-        type: String,
-        default: null,
-    },
-    placeholder: String,
-}, {}, any>;
-export const QuantityInput: DefineComponent<{}, {}, any>;
-export const Select2Input: DefineComponent<{
-    name: {
-        type: String,
-        required: true,
-    },
-    modelValue: '',
-    label: {
-        type: String,
-        default: null,
-    },
-    key: {
-        type: String,
-        default: null,
-    },
-    placeholder: {
-        type: String,
-        default: 'Click to choice',
-    },
-    searchPlaceholder: {
-        type: String,
-        default: 'Type for search...',
-    },
-    multiple: {
-        type: Boolean,
-        default: false,
-    },
-    required: {
-        type: Boolean,
-        default: false,
-    },
-    config: {
-        type: Object,
-        default: {},
-    },
-    locale: {
-        type: String,
-        default: 'en',
-    },
-    options: Array,
-    searchEnabled: {
-        type: Boolean,
-        default: false
-    },
-    hideDropdown: {
-        type: Boolean,
-        default: false
-    },
-    search: {
-        type: Object,
-        default: {
-            url: null,
-        }
-    },
-}, {}, any,
-{},
-{},
-{},
-{},
-{
-    'update:modelValue': (data) => void,
-    'search': (event) => void,
-    'searching': (query) => void,
-    'change': (file) => void,
-    'selected': () => void,
+/** Props shared by every field component. */
+export interface FieldProps {
+    /** Key of the field inside the FormContainer's v-model object. */
+    name?: string | null;
+    /** Only used when the field is rendered outside a FormContainer. */
+    modelValue?: any;
+    id?: string | null;
+    disabled?: boolean;
+    readonly?: boolean;
+    required?: boolean;
+    /** Force the invalid state (defaults to the server-side errors of the form). */
+    invalid?: boolean | null;
 }
->;
-export const StarRatingInput: DefineComponent<{}, {}, any>;
-export const SubmitButton: DefineComponent<{
-    disabled: {
-        type: Boolean,
-        default: false
-    }
-}, {}, any>;
-export const TelInput: DefineComponent<{}, {}, any>;
-export const TextAreaInput: DefineComponent<{}, {}, any>;
-export const TextInput: DefineComponent<{}, {}, any>;
-export const OTPInput: DefineComponent<{
-    name: {
-        type: String,
-        required: true,
-    },
-    maxLength: {
-        type: Number,
-        default: 5,
-    },
-    placeholder: {
-        type: String,
-        default: '',
-    },
-}, {}, any>;
-export const RangeSliderInput: DefineComponent<{
-    name: {
-        type: String,
-        default: null,
-    },
-    modelValue: {
-        type: Number,
-        default: 0
-    },
-    value: {
-        type: Number,
-        default: 0
-    },
-    min: {
-        type: Number,
-        default: 1
-    },
-    max: {
-        type: Number,
-        default: 100
-    },
-    step: {
-        type: Number,
-        default: 1
-    },
-    readonly: {
-        type: Boolean,
-        default: false
-    },
-    range: {
-        type: Boolean,
-        default: false
-    },
-    options: {
-        type: Object,
-        default: {}
-    }
-}, {}, any>;
 
-// Export پیش‌فرض
-declare const Vue3FormComponents: {
-    AmountInput: typeof AmountInput;
-    CaptchaInput: typeof CaptchaInput;
-    CheckboxButtonInput: typeof CheckboxButtonInput;
-    CheckboxInput: typeof CheckboxInput;
-    CheckboxToggle: typeof CheckboxToggle;
-    SwitchInput: typeof SwitchInput;
-    DropzoneInput: typeof DropzoneInput;
-    countryCodes: typeof countryCodes;
-    EditorInput: typeof EditorInput;
-    EmailInput: typeof EmailInput;
-    FileInput: typeof FileInput;
-    SimpleUploader: typeof SimpleUploader;
-    FormContainer: typeof FormContainer;
-    FormLabel: typeof FormLabel;
-    GroupControl: typeof GroupControl;
-    LocationInput: typeof LocationInput;
-    MobileInput: typeof MobileInput;
-    MultiQuantityInput: typeof MultiQuantityInput;
-    PasswordInput: typeof PasswordInput;
-    PersianDatePickerInput: typeof PersianDatePickerInput;
-    QuantityInput: typeof QuantityInput;
-    Select2Input: typeof Select2Input;
-    StarRatingInput: typeof StarRatingInput;
-    SubmitButton: typeof SubmitButton;
-    TelInput: typeof TelInput;
-    TextAreaInput: typeof TextAreaInput;
-    TextInput: typeof TextInput;
-    OTPInput: typeof OTPInput;
-    Quantity: typeof QuantityInput;
-    RangeSliderInput: typeof RangeSliderInput;
+type Comp<P = {}, E = {}> = DefineComponent<FieldProps & P, {}, {}, {}, {}, {}, {}, E>;
+
+export type Locale = 'auto' | 'en' | 'fa' | (string & {});
+export type OptionItem = string | number | { [key: string]: any; disabled?: boolean; description?: string };
+
+export interface RemoteSearch {
+    url: string | null;
+    method?: string;
+    param?: string;
+    debounce?: number;
+    minChars?: number;
+    headers?: Record<string, string>;
+    resultsKey?: string;
+}
+
+export declare const FormContainer: DefineComponent<{
+    modelValue?: Record<string, any>;
+    url?: string;
+    method?: 'get' | 'post' | 'put' | 'patch' | 'delete' | string;
+    only?: string[];
+    options?: Record<string, any>;
+    visitOptions?: Record<string, any>;
+    autoTab?: boolean;
+    resetOnSuccess?: boolean;
+    submitHandler?: ((event: Event | undefined, form: any) => any) | null;
+    normalizeDigits?: boolean;
+    validate?: boolean;
+    htmlMessages?: boolean;
+    hideAlerts?: boolean;
+}>;
+export declare const FormField: DefineComponent<{ name?: string | null; label?: string | null; help?: string | null; error?: string | null; required?: boolean; id?: string | null }>;
+export declare const FormLabel: DefineComponent<{ for?: string | null; required?: boolean }>;
+export declare const GroupControl: DefineComponent<{ name: string; index?: number | string | null }>;
+export declare const SubmitButton: DefineComponent<{ disabled?: boolean; loading?: boolean | null; variant?: string | null; theme?: string; locale?: Locale | null }>;
+
+export declare const TextInput: Comp<{ type?: string; placeholder?: string | null; size?: 'sm' | 'lg' | null }>;
+export declare const TextAreaInput: Comp<{ rows?: number | string; placeholder?: string | null; size?: 'sm' | 'lg' | null }>;
+export declare const EmailInput: Comp<{ placeholder?: string | null; locale?: Locale | null }>;
+export declare const PasswordInput: Comp<{ placeholder?: string | null; toggle?: boolean; locale?: Locale | null }>;
+export declare const MobileInput: Comp<{ placeholder?: string | null; locale?: Locale | null }>;
+export declare const TelInput: Comp<{ placeholder?: string; defaultCountry?: string; preferredCountries?: string[]; mode?: string; validCharactersOnly?: boolean; validate?: boolean; dropdownOptions?: object; inputOptions?: object }>;
+export declare const FormAdornInput: Comp<{ type?: string; placeholder?: string | null; startText?: string | null; endText?: string | null; size?: 'sm' | 'lg' | null }>;
+export declare const FormAdorn: typeof FormAdornInput;
+
+export declare const AmountInput: Comp<{ placeholder?: string | null; unit?: string | null; min?: number | null; max?: number | null; size?: 'sm' | 'lg' | null; locale?: Locale | null }>;
+export declare const QuantityInput: Comp<{ min?: number; max?: number | null; step?: number; unit?: string | null; locale?: Locale | null }>;
+export declare const MultiQuantityInput: Comp<{ options?: Array<string | { name: string; min?: number; max?: number; description?: string; html?: boolean }>; min?: number; max?: number | null; totalMin?: number | null; totalMax?: number | null; unit?: string | null; placement?: string; locale?: Locale | null }>;
+export declare const RangeInput: Comp<{ min?: number; max?: number; step?: number; bubble?: boolean; formatter?: ((v: number) => string) | null; ticks?: Array<number | { value: number; label: string }> }>;
+export declare const RangeSliderInput: typeof RangeInput;
+export declare const StarRatingInput: Comp<{ value?: number; maxStars?: number; precision?: number; showValue?: boolean; clearable?: boolean }>;
+
+export declare const CheckboxInput: Comp<{ type?: 'checkbox' | 'radio'; value?: any; trueValue?: any; falseValue?: any; checked?: boolean; indeterminate?: boolean; label?: string | null }>;
+export declare const SwitchInput: Comp<{ value?: any; trueValue?: any; falseValue?: any; checked?: boolean; label?: string | null }>;
+export declare const CheckboxButtonInput: Comp<{ type?: 'checkbox' | 'radio'; value?: any; trueValue?: any; falseValue?: any; checked?: boolean; variant?: string; theme?: string }>;
+export declare const CheckboxToggle: Comp<{ type?: 'checkbox' | 'radio'; value?: any; trueValue?: any; falseValue?: any; checked?: boolean; hideInput?: boolean }>;
+
+export declare const ComboboxInput: Comp<{
+    options?: OptionItem[];
+    valueKey?: string | null;
+    labelKey?: string | null;
+    label?: string | null;
+    descriptionKey?: string;
+    multiple?: boolean;
+    placeholder?: string | null;
+    searchEnabled?: boolean;
+    searchPlaceholder?: string | null;
+    search?: RemoteSearch;
+    clearable?: boolean;
+    clearText?: string | null;
+    noResultsText?: string | null;
+    loadingText?: string | null;
+    selectedText?: string | null;
+    searchNormalize?: boolean;
+    placement?: string;
+    size?: 'sm' | 'lg' | null;
+    hideDropdown?: boolean;
+    locale?: Locale | null;
+}>;
+/** @deprecated alias of ComboboxInput */
+export declare const Select2Input: typeof ComboboxInput;
+export declare const ChipsInput: Comp<{ placeholder?: string | null; separator?: string | null; allowDuplicates?: boolean; maxChips?: number | null; dismissible?: boolean; dismissIcon?: string | null; createOnBlur?: boolean; validator?: ((value: string) => boolean) | null; locale?: Locale | null }>;
+export declare const OTPInput: Comp<{ length?: number | null; maxLength?: number | null; type?: 'numeric' | 'alphanumeric' | 'alpha'; mask?: boolean; groups?: number[] | null; separator?: string; autoSubmit?: boolean; autofocus?: boolean }>;
+
+export declare const PersianDatePickerInput: Comp<{ calendar?: string; view?: string; min?: string | null; max?: string | null; range?: boolean; locale?: string; format?: string; inputFormat?: string | null; placeholder?: string | null; inputClass?: string; pickerOptions?: object }>;
+export declare const EditorInput: Comp<{ placeholder?: string; options?: object; height?: number | string | null; tinymceScriptSrc?: string | null; apiKey?: string | null }>;
+export declare const LocationInput: Comp<{ center?: { lat: number; lng: number }; zoom?: number; height?: number | string; tileUrl?: string; attribution?: string }>;
+export declare const CaptchaInput: Comp<{ url?: string; placeholder?: string | null; refreshOnSubmit?: boolean; imageWidth?: number | string; imageHeight?: number | string; locale?: Locale | null }>;
+
+export declare const FileInput: Comp<{ multiple?: boolean; endpoint?: string; accept?: string | null; headers?: Record<string, string>; fieldName?: string; locale?: Locale | null }>;
+/** @deprecated alias of FileInput */
+export declare const SimpleUploader: typeof FileInput;
+export declare const DropzoneInput: Comp<{ multiple?: boolean; url?: string; options?: object; headers?: Record<string, string>; locale?: Locale | null }>;
+export declare const UppyInput: Comp<{ multiple?: boolean; useXHR?: boolean; XHRConfig?: object; url?: string; config?: object; errorHandler?: ((m: any) => void) | null; showRestrictionCaption?: boolean; locale?: Locale | null }>;
+
+export declare const countryCodes: Array<{ country: string; code: string; iso: string }>;
+
+export interface BootstrapPlugins { Combobox?: any; Chips?: any; OtpInput?: any; Range?: any; Menu?: any }
+export declare function configureBootstrap(modules: BootstrapPlugins): void;
+export declare function configureI18n(options: { locale?: Locale; messages?: Record<string, Record<string, string>> }): void;
+
+export declare const fieldProps: Record<string, any>;
+export declare function useField(props: any, emit: (...args: any[]) => void, options?: { defaultValue?: any; valued?: () => any }): {
+    form: ComputedRef<any>;
+    group: ComputedRef<any>;
+    standalone: ComputedRef<boolean>;
+    model: any;
+    error: ComputedRef<string | null>;
+    isInvalid: ComputedRef<boolean>;
+    isDisabled: ComputedRef<boolean>;
+    inputId: ComputedRef<string>;
+    emitChange: (value: any, event?: Event) => void;
+    formApi: { submit: (...args: any[]) => void; reset: () => void } | null;
 };
+export declare function useFormApi(): { form: Ref<any> | null; submit: (...args: any[]) => void; reset: () => void };
+export declare function useDisposables(): {
+    add: (fn: () => void) => () => void;
+    listen: (target: EventTarget, type: string, handler: any, options?: any) => () => void;
+    timeout: (fn: () => void, ms: number) => number;
+    abortable: () => AbortController;
+    dispose: () => void;
+    isDisposed: () => boolean;
+};
+export declare function useBsInstance(name: 'Combobox' | 'Chips' | 'OtpInput' | 'Range' | 'Menu', getElement: () => HTMLElement | null, getConfig: () => object, hooks?: { onCreate?: (instance: any, el: HTMLElement) => void; onDestroy?: (instance: any, el: HTMLElement | null) => void }): { instance: Ref<any>; create: () => Promise<any>; destroy: () => void };
+export declare function toEnglishDigits(input: unknown): string;
 
-export default Vue3FormComponents;
+declare const plugin: Plugin;
+export default plugin;

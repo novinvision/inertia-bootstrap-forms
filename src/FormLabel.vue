@@ -1,34 +1,34 @@
 <script>
-import {defineComponent} from "vue";
+import { computed, defineComponent, inject, onMounted, ref } from 'vue';
 
 export default defineComponent({
-  props: {
-    default: false,
-    required: false,
-  },
-  emits: ['update:modelValue'],
-  mounted() {
-    const sibling = this.$el.nextElementSibling;
-    if (sibling) {
-      this.forId = sibling.id || sibling.querySelector('[id]')?.id || null;
-    }
-  },
-  data() {
-    return {
-      forId: null,
-    };
-  },
-})
+    name: 'FormLabel',
+    props: {
+        /** id of the control. Detected automatically inside <FormField> or from the next element. */
+        for: { type: String, default: null },
+        required: { type: Boolean, default: false },
+    },
+    setup(props) {
+        const ctx = inject('formField', null);
+        const el = ref(null);
+        const detected = ref(null);
+
+        onMounted(() => {
+            if (props.for || ctx?.id) return;
+            const sibling = el.value?.nextElementSibling;
+            if (sibling) detected.value = sibling.id || sibling.querySelector('[id]')?.id || null;
+        });
+
+        const target = computed(() => props.for || ctx?.id || detected.value || undefined);
+
+        return { el, target };
+    },
+});
 </script>
 
 <template>
-  <label class="mb-2 d-block" :for="forId">
-    <slot/>
-    <span class="text-danger" v-if="required">*</span>
-  </label>
+    <label ref="el" class="form-label" :for="target">
+        <slot />
+        <span v-if="required" class="fg-danger" aria-hidden="true"> *</span>
+    </label>
 </template>
-<style scoped>
-label {
-  cursor: pointer;
-}
-</style>

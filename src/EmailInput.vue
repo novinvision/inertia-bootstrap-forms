@@ -1,23 +1,24 @@
 <script>
-import TextInput from "./TextInput.vue";
-import {defineComponent} from "vue";
+import { defineComponent } from 'vue';
+import TextInput from './TextInput.vue';
+import { useI18n } from './i18n.js';
 
+/** Thin wrapper around TextInput (type="email"). All TextInput props and events are forwarded. */
 export default defineComponent({
-    components: {
-        TextInput
-    },
+    name: 'EmailInput',
+    components: { TextInput },
     props: {
-      FileInput: {
-            type: String,
-            default: 'email',
-            required: true,
-        },
+        name: { type: String, default: 'email' },
+        placeholder: { type: String, default: null },
+        locale: { type: String, default: null },
     },
-})
+    setup(props) {
+        const { t } = useI18n(() => props.locale);
+        return { t };
+    },
+});
 </script>
+
 <template>
-    <TextInput
-        :name="name"
-        placeholder="ایمیل خود را وارد کنید"
-        type="email"/>
+    <TextInput type="email" autocomplete="email" :name="name" :placeholder="placeholder ?? t('email.placeholder')" />
 </template>

@@ -1,83 +1,58 @@
 <script>
-import {computed, defineComponent, inject} from "vue";
+import { defineComponent, ref } from 'vue';
+import { fieldProps, useField } from './composables/useField.js';
+import { useChoice } from './composables/useChoice.js';
 
+/** Bootstrap 6 switch: `.switch` wrapper around `<input type="checkbox" role="switch" switch>`. */
 export default defineComponent({
-  props: {
-    name: {
-      type: String,
-      required: true,
+    name: 'SwitchInput',
+    emits: ['update:modelValue', 'change', 'focus', 'blur'],
+    props: {
+        ...fieldProps,
+        value: { type: [String, Number, Boolean, Object], default: null },
+        trueValue: { type: null, default: true },
+        falseValue: { type: null, default: false },
+        checked: { type: Boolean, default: false },
+        label: { type: String, default: null },
     },
-    id: {
-      type: String,
-      default: '',
-      required: false,
-    },
-    value: {
-      type: [String, Number],
-      default: null,
-      required: false,
-    },
-    disabled: {
-      type: Boolean,
-      default: false,
-    },
-    type: {
-      type: String,
-      default: 'checkbox',
-      required: false,
-    },
-  },
-  computed: {
-    inputID() {
-      return this.form.getID(this);
-    }
-  },
-  setup(props) {
-    let form = inject('form', {
-      errors: {},
-      getID(name) {
-        return name;
-      }
-    });
-    let group = inject('group', {});
+    setup(props, { emit }) {
+        const input = ref(null);
+        const field = useField(props, emit, { valued: () => props.value });
+        useChoice(props, field, input, { type: () => 'checkbox' });
 
-    const modelValue = computed({
-      get() {
-        return (group.value && form.value[group.value.name]) ? group.value?.getData(props.name) : form.value[props.name];
-      },
-      set(value) {
-        if (group?.value?.name) {
-          group.value.setData(props.name, value);
-        } else {
-          form.value[props.name] = value;
-        }
-      }
-    });
-
-    return {modelValue, form, group};
-  },
-})
+        return {
+            ...field,
+            input,
+            onChange: (event) => field.emitChange(field.model.value, event),
+        };
+    },
+    expose: ['input'],
+});
 </script>
+
 <template>
-  <div class="form-check form-switch" :class="{'disabled': disabled}">
-    <input
-        :name="name"
-        :id="inputID"
-        v-model="modelValue"
-        :class="{'is-invalid': form?.errors[name]}"
-        :disabled="form?.processing || disabled"
-        :type="type"
-        :value="value"
-        @change="e => $emit('change', e)"
-        class="form-check-input">
-    <label class="form-check-label" :for="inputID">
-      <slot/>
-    </label>
-  </div>
+    <div class="form-field">
+        <div class="switch">
+            <input
+                ref="input"
+                v-model="model"
+                :name="name"
+                :id="inputId"
+                type="checkbox"
+                role="switch"
+                switch
+                :value="value ?? undefined"
+                :true-value="trueValue"
+                :false-value="falseValue"
+                :required="required"
+                :disabled="isDisabled"
+                :aria-invalid="isInvalid || undefined"
+                :class="{ 'is-invalid': isInvalid }"
+                @change="onChange"
+                @focus="$emit('focus', $event)"
+                @blur="$emit('blur', $event)"
+            />
+        </div>
+        <label :for="inputId"><slot>{{ label }}</slot></label>
+    </div>
 </template>
-<style>
-.form-check,
-.form-check label {
-  cursor: pointer;
-}
-</style>

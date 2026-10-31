@@ -1,136 +1,53 @@
 <script>
-import {computed, defineComponent, inject} from "vue";
+import { defineComponent, ref } from 'vue';
+import { fieldProps, useField } from './composables/useField.js';
+import { useChoice } from './composables/useChoice.js';
 
+/** Selectable card (Bootstrap 6 `.form-field-card`): the whole card toggles the checkbox / radio. */
 export default defineComponent({
-  props: {
-    name: {
-      type: String,
-      required: true,
+    name: 'CheckboxToggle',
+    emits: ['update:modelValue', 'change', 'focus', 'blur'],
+    props: {
+        ...fieldProps,
+        type: { type: String, default: 'checkbox', validator: (v) => ['checkbox', 'radio'].includes(v) },
+        value: { type: [String, Number, Boolean, Object], default: 'yes' },
+        trueValue: { type: null, default: true },
+        falseValue: { type: null, default: false },
+        checked: { type: Boolean, default: false },
+        /** Visually hide the check mark (the card highlight is the only indicator). */
+        hideInput: { type: Boolean, default: false },
     },
-    id: {
-      type: String,
-      default: '',
-      required: false,
-    },
-    value: {
-      type: [String, Number],
-      default: 'yes',
-      required: false,
-    },
-    type: {
-      type: String,
-      default: 'checkbox',
-      required: false,
-    },
-    disabled: {
-      type: Boolean,
-      default: false,
-      required: false,
-    },
-    readonly: {
-      type: Boolean,
-      default: false,
-    },
-    hideInput: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  computed: {
-    inputID() {
-      return this.form.getID(this) + (this.value || '');
-    },
-    selectedValue() {
-      return (this.modelValue && typeof this.modelValue == 'object') ? Object.values(this.modelValue) : (this.modelValue ? [this.modelValue] : null)
-    }
-  },
-  setup(props) {
-    let form = inject('form', {
-      errors: {},
-      getID(name) {
-        return name;
-      }
-    });
-    let group = inject('group', {});
+    setup(props, { emit }) {
+        const input = ref(null);
+        const field = useField(props, emit, { valued: () => props.value });
+        useChoice(props, field, input);
 
-    const modelValue = computed({
-      get() {
-        return (group.value && form.value[group.value.name]) ? group.value?.getData(props.name) : form.value[props.name];
-      },
-      set(value) {
-        if (group?.value?.name) {
-          group.value.setData(props.name, value);
-        } else {
-          form.value[props.name] = value;
-        }
-      }
-    });
-
-    return {modelValue, form, group};
-  },
-})
+        return { ...field, input, onChange: (event) => field.emitChange(field.model.value, event) };
+    },
+    expose: ['input'],
+});
 </script>
+
 <template>
-  <label class="form-check-toggle"
-         :class="{
-            'form-check-toggle--active': (selectedValue || []).includes(value),
-            'disabled': (disabled || readonly),
-            'is-invalid': form?.errors[name]
-         }" :for="inputID">
-    <input
-        :name="name"
-        :id="inputID"
-        v-model="modelValue"
-        :class="{'is-invalid': form?.errors[name], 'form-check-toggle--input-hide': hideInput}"
-        :disabled="form?.processing || disabled"
-        :type="type"
-        :value="value"
-        :readonly="readonly"
-        @change="e => $emit('change', e)"
-        class="form-check-toggle--input form-check-input">
-    <slot/>
-  </label>
+    <div class="form-field form-field-card" :class="{ 'is-invalid': isInvalid, disabled: isDisabled || readonly }">
+        <input
+            ref="input"
+            v-model="model"
+            :name="name"
+            :id="inputId"
+            :type="type"
+            :value="value"
+            :true-value="trueValue"
+            :false-value="falseValue"
+            :required="required"
+            :disabled="isDisabled"
+            :aria-invalid="isInvalid || undefined"
+            :class="[type === 'radio' ? 'radio' : 'check', { 'is-invalid': isInvalid, 'visually-hidden': hideInput }]"
+            @click="readonly && $event.preventDefault()"
+            @change="onChange"
+            @focus="$emit('focus', $event)"
+            @blur="$emit('blur', $event)"
+        />
+        <label :for="inputId"><slot /></label>
+    </div>
 </template>
-<style>
-.form-check-toggle {
-  position: relative;
-  cursor: pointer;
-  display: block;
-  background-color: var(--bs-body-bg, #ffffff);
-  border-radius: var(--bs-border-radius, 1rem);
-  min-width: 100px;
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.97rem;
-  font-weight: 400;
-  line-height: 1.7;
-  color: var(--bs-body-color, #000000);
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  background-clip: padding-box;
-  border: var(--bs-border-width, 1px) solid var(--bs-border-color, #eeeeee);
-  transition: background-color ease 0.3s, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-}
-
-.form-check-toggle.is-invalid {
-  border-color: var(--bs-form-invalid-border-color);
-}
-
-.form-check-toggle.form-check-toggle--active,
-.form-check-toggle:has(input:checked) {
-  background-color: var(--bs-warning-bg-subtle, #ffda6a);
-  border-color: var(--bs-warning-border-subtle, var(--bs-alert-border-color, #fff0c3));
-}
-
-.form-check-toggle .form-check-toggle--input-hide {
-  visibility: hidden;
-  position: absolute;
-  top: 0;
-  right: 0;
-}
-
-.form-check-toggle .form-check-input {
-  margin-right: 5px;
-}
-</style>

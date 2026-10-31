@@ -1,133 +1,114 @@
 <script>
-import {InputGroup, InputGroupText} from 'vue3-bootstrap-components';
-import {computed, defineComponent, inject} from "vue";
+import { computed, defineComponent, onMounted } from 'vue';
+import { fieldProps, useField } from './composables/useField.js';
+import { useI18n } from './i18n.js';
+import { formatNumber, parseDigits } from './utils/digits.js';
 
+/** Numeric stepper: [ − ] [ value ] [ + ] unit. */
 export default defineComponent({
-  components: {InputGroup, InputGroupText},
-  props: {
-    name: {
-      type: String,
-      required: true,
+    name: 'QuantityInput',
+    emits: ['update:modelValue', 'change', 'input', 'increment', 'decrement', 'focus', 'blur'],
+    props: {
+        ...fieldProps,
+        min: { type: Number, default: 0 },
+        max: { type: Number, default: null },
+        step: { type: Number, default: 1 },
+        unit: { type: String, default: null },
+        size: { type: String, default: null },
+        locale: { type: String, default: null },
     },
-    required: Boolean,
-    disabled: Boolean,
-    readonly: Boolean,
-    unit: {
-      type: String,
-      default: 'عدد'
-    },
-    min: {
-      type: Number,
-      default: 0
-    },
-    max: {
-      type: Number,
-      default: null
-    },
-  },
-  setup(props) {
-    let form = inject('form');
-    let group = inject('group', {});
+    setup(props, { emit }) {
+        const field = useField(props, emit);
+        const { t } = useI18n(() => props.locale);
 
-    if (form === undefined) {
-      form = {
-        errors: {},
-        getID(name) {
+        const current = computed(() => {
+            const n = Number(field.model.value);
+            return Number.isFinite(n) ? n : props.min;
+        });
+
+        const unitText = computed(() => props.unit ?? t('quantity.unit'));
+        const display = computed(() => formatNumber(current.value));
+        const lock = computed(() => props.readonly || field.isDisabled.value);
+        const canIncrement = computed(() => !lock.value && (props.max === null || current.value + props.step <= props.max));
+        const canDecrement = computed(() => !lock.value && current.value - props.step >= props.min);
+
+        function set(next, event, kind) {
+            let n = next;
+            if (props.max !== null) n = Math.min(n, props.max);
+            n = Math.max(n, props.min);
+            field.model.value = n;
+            if (kind) emit(kind, n);
+            field.emitChange(n, event);
         }
-      };
-    }
 
-    if (!form[props.name]) {
-      form[props.name] = props.min;
-    }
-
-    const modelValue = computed({
-      get() {
-        return ((group.value && form.value[group.value.name]) ? group.value?.getData(props.name) : form.value[props.name]);
-      },
-      set(value) {
-        if (group?.value?.name) {
-          group.value.setData(props.name, value);
-        } else {
-          form.value[props.name] = value;
+        function onInput(event) {
+            const parsed = parseDigits(event.target.value);
+            field.model.value = parsed === null ? props.min : parsed;
+            event.target.value = formatNumber(field.model.value);
+            emit('input', field.model.value, event);
         }
-      }
-    });
 
-    if (!modelValue.value) {
-      modelValue.value = props.min;
-    }
+        onMounted(() => {
+            // A quantity is never empty: initialise it with the minimum
+            const v = field.model.value;
+            if (v === null || v === undefined || v === '') field.model.value = props.min;
+        });
 
-    return {modelValue, group, form};
-  },
-  methods: {
-    onChange(event) {
-      let value = parseFloat(this.$number.toEnglish(event.detail?.unmasked)) || 1;
-      this.$emit('update:modelValue', value);
-      this.modelValue = value;
+        return {
+            ...field,
+            t,
+            unitText,
+            display,
+            canIncrement,
+            canDecrement,
+            lock,
+            increment: (e) => canIncrement.value && set(current.value + props.step, e, 'increment'),
+            decrement: (e) => canDecrement.value && set(current.value - props.step, e, 'decrement'),
+            onInput,
+            clampOnBlur: (e) => set(current.value, e),
+        };
     },
-    increment() {
-      if (!this.max || (this.max < this.modelValue)) {
-        this.modelValue = this.modelValue + 1;
-      }
-    },
-    decrement() {
-      if ((!this.min || (this.min < this.modelValue)) && this.modelValue > 1) {
-        this.modelValue = this.modelValue - 1;
-      }
-    }
-  },
-  data() {
-    return {}
-  }
-})
+});
 </script>
+
 <template>
-  <InputGroup class="input-group-quantity">
-    <button @click="increment" type="button" class="btn">
-      <svg width="800px" height="800px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path
-            d="M13 3C13 2.44772 12.5523 2 12 2C11.4477 2 11 2.44772 11 3V11H3C2.44772 11 2 11.4477 2 12C2 12.5523 2.44772 13 3 13H11V21C11 21.5523 11.4477 22 12 22C12.5523 22 13 21.5523 13 21V13H21C21.5523 13 22 12.5523 22 12C22 11.4477 21.5523 11 21 11H13V3Z"
-            fill="#0F0F0F"/>
-      </svg>
-    </button>
-    <input
-        :name="name"
-        :value="this.modelValue"
-        v-maska
-        data-maska="###,###,###,###,###,###,###"
-        data-maska-reversed
-        @maska="onChange"
-        :class="{'is-invalid': form.errors[name]}"
-        :disabled="disabled || form.processing"
-        :readonly="readonly"
-        type="tel"
-        class="form-control fanum text-center">
-    <button @click="decrement" type="button" class="btn">
-      <svg width="800px" height="800px" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" fill="none">
-        <path fill="#000000" fill-rule="evenodd" d="M18 10a1 1 0 01-1 1H3a1 1 0 110-2h14a1 1 0 011 1z"/>
-      </svg>
-    </button>
-    <InputGroupText class="fanum">{{ unit }}</InputGroupText>
-    <slot name="suffix"/>
-  </InputGroup>
+    <div class="input-group input-group-quantity" :class="{ 'is-invalid': isInvalid }">
+        <button
+            type="button"
+            class="btn-outline theme-secondary btn-icon"
+            :disabled="!canIncrement"
+            :aria-label="t('quantity.increase')"
+            @click="increment"
+        >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 3v10M3 8h10" /></svg>
+        </button>
+        <input
+            :name="name"
+            :id="inputId"
+            :value="display"
+            :readonly="readonly"
+            :disabled="isDisabled"
+            :aria-invalid="isInvalid || undefined"
+            type="tel"
+            inputmode="numeric"
+            autocomplete="off"
+            class="form-control fanum text-center"
+            :class="{ 'is-invalid': isInvalid }"
+            @input="onInput"
+            @change="clampOnBlur"
+            @focus="$emit('focus', $event)"
+            @blur="$emit('blur', $event)"
+        />
+        <button
+            type="button"
+            class="btn-outline theme-secondary btn-icon"
+            :disabled="!canDecrement"
+            :aria-label="t('quantity.decrease')"
+            @click="decrement"
+        >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 8h10" /></svg>
+        </button>
+        <span v-if="unitText" class="input-group-text fanum">{{ unitText }}</span>
+        <slot name="suffix" />
+    </div>
 </template>
-<style>
-
-.input-group-quantity .input-group-text,
-.input-group-quantity .btn {
-  background-color: var(--bs-body-bg);
-  --bs-btn-hover-bg: var(--bs-secondary-bg);
-  --bs-btn-active-bg: var(--bs-secondary-bg);
-}
-
-.input-group-quantity input.form-control {
-  border: 0 !important;
-  box-shadow: none !important;
-}
-
-.input-group-quantity .btn svg {
-  width: 14px;
-  height: 14px;
-}
-</style>

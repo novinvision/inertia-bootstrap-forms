@@ -1,108 +1,130 @@
-<script setup>
-import { computed, inject, ref, onMounted } from "vue";
-import Dropzone from "dropzone";
-import "dropzone/dist/basic.css";
-import "dropzone/dist/dropzone.css";
+<script>
+import { defineComponent, onMounted, ref, watch } from 'vue';
+import { fieldProps, useField } from './composables/useField.js';
+import { useDisposables } from './composables/useDisposables.js';
+import { useI18n } from './i18n.js';
+import { laravelHeaders } from './utils/http.js';
 
-const props = defineProps({
-  name: {
-    type: String,
-    required: true,
-  },
-  multiple: {
-    type: Boolean,
-    default: false,
-  },
-  modelValue: String,
-  url: { type: String, default: "/upload" },
-  options: { type: Object, default: () => ({}) },
-});
-const emit = defineEmits(["update:modelValue"]);
+/**
+ * Dropzone.js uploader. Import `dropzone/dist/dropzone.css` (and `basic.css`) in your application.
+ * Stored value: the JSON object returned by the endpoint (single) or an array of them (multiple).
+ */
+export default defineComponent({
+    name: 'DropzoneInput',
+    emits: ['update:modelValue', 'change', 'ready', 'added', 'success', 'error', 'removed', 'complete'],
+    props: {
+        ...fieldProps,
+        multiple: { type: Boolean, default: false },
+        url: { type: String, default: '/upload' },
+        /** Dropzone options (merged over the defaults). */
+        options: { type: Object, default: () => ({}) },
+        headers: { type: Object, default: () => ({}) },
+        locale: { type: String, default: null },
+    },
+    setup(props, { emit, expose }) {
+        const field = useField(props, emit);
+        const { t } = useI18n(() => props.locale);
+        const d = useDisposables();
 
-const form = inject("form", {
-  value: {},
-  errors: {},
-  getID: n => n,
-});
+        const el = ref(null);
+        let dz = null;
+        let resetting = false;
 
-const group = inject("group", null);
+        const asArray = () => (Array.isArray(field.model.value) ? field.model.value : []);
 
-const dz = ref(null);
-const dropzone = ref(null);
+        onMounted(async () => {
+            const { default: Dropzone } = await import('dropzone');
+            if (d.isDisposed() || !el.value) return;
 
-const modelValue = computed({
-  get() {
-    return group?.value?.name
-        ? group.value.getData(props.name)
-        : form.value[props.name];
-  },
-  set(val) {
-    if (group?.value?.name) {
-      group.value.setData(props.name, val);
-    } else {
-      form.value[props.name] = val;
-    }
-    emit("update:modelValue", val);
-  }
-});
+            Dropzone.autoDiscover = false;
 
-onMounted(() => {
-  dropzone.value = new Dropzone(dz.value, {
-    url: props.url,
-    addRemoveLinks: true,
-    maxFiles: props.multiple ? null : 1,
-    ...props.options,
-  });
+            dz = new Dropzone(el.value, {
+                url: props.url,
+                addRemoveLinks: true,
+                maxFiles: props.multiple ? null : 1,
+                headers: laravelHeaders(props.headers),
+                ...props.options,
+            });
 
-  dropzone.value.on("error", (file, response) => {
-    let message = "خطا در آپلود";
+            dz.on('addedfile', (file) => emit('added', file));
+            dz.on('complete', (file) => emit('complete', file));
 
-    if (typeof response === "string") {
-      message = response;
-    }
+            dz.on('error', (file, response) => {
+                let message = t('upload.failed');
+                if (typeof response === 'string') message = response;
+                if (response?.message) message = response.message;
 
-    if (response?.message) {
-      message = response.message;
-    }
+                file.previewElement?.classList.add('dz-error');
+                const target = file.previewElement?.querySelector('[data-dz-errormessage]');
+                if (target) target.textContent = message;
+                emit('error', file, message);
+            });
 
-    file.previewElement.classList.add("dz-error");
-    const err = file.previewElement.querySelector("[data-dz-errormessage]");
-    if (err) err.textContent = message;
-  });
+            dz.on('success', (file, response) => {
+                const result = response?.data ?? response;
+                field.model.value = props.multiple ? [...asArray(), result] : result;
+                field.emitChange(field.model.value);
+                emit('success', file, result);
+            });
 
-  dropzone.value.on("success", (file, response) => {
-    const result = response.data ?? response;
+            dz.on('removedfile', async (file) => {
+                emit('removed', file);
+                if (resetting) return;
 
-    if(props.multiple){
-      modelValue.value = [...(modelValue.value || []), result];
-    }else{
-      modelValue.value = result;
-    }
-  });
+                let data = file.xhr?.response;
+                if (!data) return;
 
-  dropzone.value.on("removedfile", async (file) => {
-    let data = file.xhr.response;
-    if (!data) return;
+                try {
+                    data = JSON.parse(data);
+                    const info = data.data ?? data;
 
-    try {
-      data = JSON.parse(data);
-      modelValue.value = (modelValue.value || []).filter(f => f.path !== data.path);
+                    field.model.value = props.multiple
+                        ? asArray().filter((f) => (f?.path ?? f) !== info.path)
+                        : null;
+                    field.emitChange(field.model.value);
 
-      await fetch(props.url, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          'Accept': 'application/json',
-        },
-        body: data.path
-      });
-    } catch (e) {
-      console.error("حذف فایل در سرور با خطا مواجه شد", e);
-    }
-  });
+                    await fetch(props.url, {
+                        method: 'DELETE',
+                        headers: laravelHeaders({ 'Content-Type': 'application/json', ...props.headers }),
+                        credentials: 'same-origin',
+                        body: info.path,
+                    });
+                } catch (e) {
+                    // eslint-disable-next-line no-console
+                    console.error('[inertia-bootstrap-forms] Could not delete the uploaded file on the server', e);
+                }
+            });
+
+            // Release the dropzone (listeners, hidden input, previews) when the component unmounts
+            d.add(() => {
+                resetting = true;
+                try { dz?.destroy(); } catch (e) { /* noop */ }
+                dz = null;
+            });
+
+            emit('ready', dz);
+        });
+
+        // The form was reset: clear the previews without calling the DELETE endpoint
+        watch(
+            () => field.model.value,
+            (v) => {
+                const empty = v === null || v === undefined || v === '' || (Array.isArray(v) && !v.length);
+                if (empty && dz?.files?.length) {
+                    resetting = true;
+                    dz.removeAllFiles(true);
+                    resetting = false;
+                }
+            }
+        );
+
+        expose({ dropzone: () => dz });
+
+        return { ...field, el };
+    },
 });
 </script>
 
 <template>
-  <div class="inertia-dropzone-input dropzone" ref="dz"></div>
+    <div ref="el" class="inertia-dropzone-input dropzone" :class="{ 'is-invalid': isInvalid }" :id="inputId"></div>
 </template>

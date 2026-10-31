@@ -1,27 +1,32 @@
 {
     "name": "inertia-bootstrap-forms",
-    "version": "2.1.21",
-    "description": "Create bootstrap forms with inertia and twitter bootstrap",
+    "version": "3.0.0",
+    "description": "Bootstrap 6 form components for Vue 3 + Inertia.js (Laravel). Every field is bound to a single FormContainer v-model.",
+    "type": "module",
     "main": "dist/inertia-bootstrap-forms.cjs.js",
     "module": "dist/inertia-bootstrap-forms.es.js",
-    "type": "module",
     "types": "./index.d.ts",
+    "sideEffects": false,
     "scripts": {
         "dev": "vite build --watch",
-        "build": "vite build"
+        "build": "vite build",
+        "test": "vitest run"
     },
     "files": [
         "dist",
         "src",
-        "index.d.ts"
+        "index.d.ts",
+        "README.md",
+        "README.fa.md"
     ],
     "exports": {
         ".": {
-            "import": "./dist/inertia-bootstrap-forms.es.js"
+            "types": "./index.d.ts",
+            "import": "./dist/inertia-bootstrap-forms.es.js",
+            "require": "./dist/inertia-bootstrap-forms.cjs.js"
         },
-        "./dist/*.css": {
-            "import": "./dist/style.css"
-        }
+        "./src/*": "./src/*",
+        "./package.json": "./package.json"
     },
     "author": "NovinVision",
     "license": "MIT",
@@ -34,34 +39,48 @@
         "vue",
         "laravel",
         "bootstrap",
-        "forms"
+        "bootstrap6",
+        "forms",
+        "combobox",
+        "chips",
+        "otp"
     ],
     "dependencies": {
         "@tinymce/tinymce-vue": "^6.1.0",
-        "@uppy/audio": "^3.1.0",
         "@uppy/core": "^5.2.0",
-        "@uppy/dashboard": "^5.1.1",
-        "@uppy/drag-drop": "^5.1.0",
-        "@uppy/locales": "^5.1.1",
         "@uppy/vue": "^3.2.0",
         "@uppy/xhr-upload": "^5.1.1",
-        "@vitejs/plugin-vue": "^5.2.4",
         "@vue-leaflet/vue-leaflet": "^0.10.1",
-        "choices.js": "^11.1.0",
-        "svelte-range-slider-pips": "^4.1.0",
         "vue-tel-input": "^9.3.0",
-        "vue3-bootstrap-components": "^2.0.16",
         "vue3-persian-datetime-picker": "^1.2.2"
     },
     "peerDependencies": {
-        "@inertiajs/vue3": ">3.0",
+        "@floating-ui/dom": "^1.7.6",
+        "@inertiajs/vue3": ">=2.0.0",
+        "bootstrap": "^6.0.0-alpha.1",
         "dropzone": "^6.0.0-beta.2",
-        "vue": "^3.0"
+        "leaflet": "^1.9.0",
+        "vue": "^3.3.0"
+    },
+    "peerDependenciesMeta": {
+        "dropzone": {
+            "optional": true
+        },
+        "leaflet": {
+            "optional": true
+        }
     },
     "devDependencies": {
+        "@floating-ui/dom": "^1.7.6",
+        "@inertiajs/vue3": "^2.0.0",
+        "@vitejs/plugin-vue": "^5.2.4",
+        "@vue/test-utils": "^2.4.6",
+        "bootstrap": "6.0.0-alpha.1",
         "dropzone": "^6.0.0-beta.2",
-        "sass-embedded": "^1.89.2",
-        "vite": "^5"
+        "jsdom": "^25.0.0",
+        "vite": "^5",
+        "vitest": "^2.1.0",
+        "vue": "^3.5.0"
     },
     "bugs": {
         "url": "https://github.com/novinvision/inertia-bootstrap-forms/issues"

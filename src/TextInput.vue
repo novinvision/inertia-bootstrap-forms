@@ -1,51 +1,42 @@
 <script>
-import {computed, inject, defineComponent} from "vue";
+import { computed, defineComponent } from 'vue';
+import { fieldProps, useField } from './composables/useField.js';
 
 export default defineComponent({
+    name: 'TextInput',
+    emits: ['update:modelValue', 'change', 'input', 'focus', 'blur'],
     props: {
-        name: {
-            type: String,
-            required: true,
-        },
+        ...fieldProps,
+        type: { type: String, default: 'text' },
+        placeholder: { type: String, default: null },
+        /** sm | lg */
+        size: { type: String, default: null },
     },
-    computed: {
-        inputID() {
-            return this.form.getID(this);
-        }
-    },
-    setup(props) {
-        let form = inject('form', {
-            errors: {},
-            getID(name) {
-                return name;
-            }
-        });
-        let group = inject('group', {});
+    setup(props, { emit }) {
+        const field = useField(props, emit);
+        const sizeClass = computed(() => (props.size ? `form-control-${props.size}` : null));
 
-        const modelValue = computed({
-            get() {
-                return (group.value && form.value[group.value.name]) ? group.value?.getData(props.name) : form.value[props.name];
-            },
-            set(value) {
-                if (group?.value?.name) {
-                    group.value.setData(props.name, value);
-                } else {
-                    form.value[props.name] = value;
-                }
-            }
-        });
-
-        return {modelValue, form, group};
+        return { ...field, sizeClass, emit };
     },
-})
+});
 </script>
+
 <template>
     <input
+        v-model="model"
         :name="name"
-        :id="inputID"
-        v-model="modelValue"
-        :class="{'is-invalid': form?.errors[name] !== undefined}"
-        :disabled="form?.processing"
-        type="text"
-        class="form-control">
+        :id="inputId"
+        :type="type"
+        :placeholder="placeholder"
+        :required="required"
+        :readonly="readonly"
+        :disabled="isDisabled"
+        :aria-invalid="isInvalid || undefined"
+        class="form-control"
+        :class="[sizeClass, { 'is-invalid': isInvalid }]"
+        @input="emit('input', model, $event)"
+        @change="emitChange(model, $event)"
+        @focus="$emit('focus', $event)"
+        @blur="$emit('blur', $event)"
+    />
 </template>

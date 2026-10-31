@@ -1,117 +1,58 @@
 <script>
-import Editor from '@tinymce/tinymce-vue';
-import {computed, defineComponent, inject, ref} from "vue";
+import { defineAsyncComponent, defineComponent, ref, watch } from 'vue';
+import { fieldProps, useField } from './composables/useField.js';
 
+const Editor = defineAsyncComponent(() => import('@tinymce/tinymce-vue'));
+
+/** TinyMCE rich text editor. The HTML is stored in the FormContainer's v-model. */
 export default defineComponent({
-  emits: ['update:modelValue', 'setContent'],
-  components: {Editor},
-  props: {
-    name: {
-      type: String,
-      required: true,
+    name: 'EditorInput',
+    components: { Editor },
+    emits: ['update:modelValue', 'change', 'init', 'focus', 'blur'],
+    props: {
+        ...fieldProps,
+        placeholder: { type: String, default: '' },
+        /** TinyMCE `init` options. */
+        options: { type: Object, default: () => ({}) },
+        height: { type: [Number, String], default: null },
+        /** Self-hosted TinyMCE script (`tinymceScriptSrc`) or Tiny Cloud api key. */
+        tinymceScriptSrc: { type: String, default: null },
+        apiKey: { type: String, default: null },
     },
-    placeholder: {
-      type: String,
-      default: '',
-    },
-    disabled: {
-      type: Boolean,
-      default: false,
-    },
-    modelValue: String,
-    options: {
-      type: Object,
-      default: {},
-      required: false,
-    },
-  },
-  setup(props, {expose, emit}) {
-    const editorRef = ref(null)
-    const tinyInstance = ref(null)
+    setup(props, { emit, expose }) {
+        const field = useField(props, emit);
+        const tiny = ref(null);
 
-    const handleInit = (evt, editor) => {
-      tinyInstance.value = editor
-    }
-
-    expose({
-      editor: () => tinyInstance.value
-    })
-
-    let form = inject('form', {
-      errors: {},
-      getID(name) {
-        return name;
-      }
-    });
-    let group = inject('group', {});
-
-    const modelValue = computed({
-      get() {
-        return (group.value && form.value[group.value.name]) ? group.value?.getData(props.name) : form.value[props.name];
-      },
-      set(value) {
-        if (group?.value?.name) {
-          group.value.setData(props.name, value);
-        } else {
-          form.value[props.name] = value;
+        function onInit(event, editor) {
+            tiny.value = editor;
+            editor.mode?.set(field.isDisabled.value || props.readonly ? 'readonly' : 'design');
+            emit('init', editor);
         }
-      }
-    });
 
-    return {modelValue, form, group, editorRef, handleInit};
-  },
-})
+        watch(
+            () => field.isDisabled.value || props.readonly,
+            (locked) => tiny.value?.mode?.set(locked ? 'readonly' : 'design')
+        );
+
+        expose({ editor: () => tiny.value });
+
+        return { ...field, onInit };
+    },
+});
 </script>
 
 <template>
-  <Editor
-      ref="editorRef"
-      @init="handleInit"
-      v-model="modelValue"
-      class="tiny-editor-input-el"
-      :init="{
-        disabled: this.disabled,
-        placeholder: this.placeholder,
-        ...options
-      }"
-  />
+    <Editor
+        v-model="model"
+        :id="inputId"
+        :disabled="isDisabled || readonly"
+        :tinymce-script-src="tinymceScriptSrc || undefined"
+        :api-key="apiKey || undefined"
+        :init="{ placeholder, ...(height ? { height } : {}), ...options }"
+        class="tiny-editor-input-el"
+        @init="onInit"
+        @change="emitChange(model, $event)"
+        @focus="$emit('focus', $event)"
+        @blur="$emit('blur', $event)"
+    />
 </template>
-<style>
-textarea.tiny-editor-input-el {
-  width: 100%;
-  min-height: 200px;
-}
-
-textarea.tiny-editor-input-el,
-.tox.tox-tinymce {
-  background-color: transparent;
-  border: 0;
-  outline: none;
-  background-image: url("css/loader.gif");
-  background-repeat: no-repeat;
-  background-position: center center;
-}
-
-.tox .tox-edit-area::before {
-  display: none;
-}
-
-.tox .tox-throbber{
-  z-index: var(--bs-dropdown-zindex, 900) !important;
-}
-
-.tox:not(.tox-tinymce-inline) .tox-editor-header,
-.tox .tox-toolbar-overlord,
-.tox .tox-toolbar, .tox .tox-toolbar__overflow, .tox .tox-toolbar__primary,
-.tox .tox-statusbar{
-  background-color: var(--bs-body-bg, #fff) !important;
-  color: var(--bs-body-color, #000) !important;
-}
-
-.tox .tox-statusbar a,
-.tox .tox-statusbar__path-item,
-.tox .tox-statusbar__wordcount,
-.tox .tox-statusbar{
-  color: var(--bs-secondary-color, #cccc) !important;
-}
-</style>

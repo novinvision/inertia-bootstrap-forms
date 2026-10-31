@@ -1,69 +1,56 @@
 <script>
-import {defineComponent, inject} from "vue";
+import { defineComponent, ref } from 'vue';
+import { fieldProps, useField } from './composables/useField.js';
+import { useChoice } from './composables/useChoice.js';
 
+/** Toggle button (Bootstrap 6 `.btn-check`): the input is nested inside the label. */
 export default defineComponent({
-    emits: ['change'],
+    name: 'CheckboxButtonInput',
+    emits: ['update:modelValue', 'change', 'focus', 'blur'],
     props: {
-        name: {
-            type: String,
-            required: true,
-        },
-        id: {
-            type: String,
-            default: '',
-            required: false,
-        },
-        value: {
-            type: String,
-            default: 'yes',
-            required: false,
-        },
-        type: {
-            type: String,
-            default: 'radio',
-            required: false,
-        },
+        ...fieldProps,
+        type: { type: String, default: 'radio', validator: (v) => ['checkbox', 'radio'].includes(v) },
+        value: { type: [String, Number, Boolean, Object], default: 'yes' },
+        trueValue: { type: null, default: true },
+        falseValue: { type: null, default: false },
+        checked: { type: Boolean, default: false },
+        /** solid | outline | subtle | text | styled */
+        variant: { type: String, default: 'outline' },
+        theme: { type: String, default: 'primary' },
     },
-    methods:{
-        change(e){
-            this.$emit('change', e);
-        }
-    },
-    setup(props) {
-        let form = inject('form');
+    setup(props, { emit }) {
+        const input = ref(null);
+        const field = useField(props, emit, { valued: () => props.value });
+        useChoice(props, field, input);
 
-        if (form === undefined) {
-            form = {
-                errors: {},
-                getID(name) {
-                    return name;
-                }
-            };
-        }
-
-        return {form};
+        return { ...field, input, onChange: (event) => field.emitChange(field.model.value, event) };
     },
-})
+    expose: ['input'],
+});
 </script>
+
 <template>
-    <label class="btn-label" :for="form.getID(name)+(id || value)" :class="{'active': (form[name] === value || form[name] === true)}">
+    <label
+        class="btn-check"
+        :class="[`btn-${variant}`, `theme-${theme}`, { 'is-invalid': isInvalid, disabled: isDisabled }]"
+    >
         <input
+            ref="input"
+            v-model="model"
             :name="name"
-            :id="form.getID(name)+(id || value)"
-            v-model="form[name]"
-            :class="{'is-invalid': form?.errors[name]}"
-            :disabled="form?.processing"
             :type="type"
             :value="value"
-            @change="change"
+            :true-value="trueValue"
+            :false-value="falseValue"
+            :required="required"
+            :disabled="isDisabled"
+            :aria-invalid="isInvalid || undefined"
             autocomplete="off"
-            class="btn-check">
-        <slot/>
+            :class="{ 'is-invalid': isInvalid }"
+            @change="onChange"
+            @focus="$emit('focus', $event)"
+            @blur="$emit('blur', $event)"
+        />
+        <slot />
     </label>
 </template>
-<style>
-.btn-label:not(.active){
-    --bs-bg-opacity: .3;
-    opacity: .6;
-}
-</style>
