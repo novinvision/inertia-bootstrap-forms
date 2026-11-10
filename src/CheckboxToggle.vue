@@ -16,6 +16,8 @@ export default defineComponent({
         checked: { type: Boolean, default: false },
         /** Visually hide the check mark (the card highlight is the only indicator). */
         hideInput: { type: Boolean, default: false },
+        formField: { type: Boolean, default: true },
+        formFieldCard: { type: Boolean, default: true },
     },
     setup(props, { emit }) {
         const input = ref(null);
@@ -29,7 +31,11 @@ export default defineComponent({
 </script>
 
 <template>
-    <div class="form-field form-field-card" :class="{ 'is-invalid': isInvalid, disabled: isDisabled || readonly }">
+    <div :class="{
+      'form-field': formField,
+      'form-field-card': formFieldCard,
+      'is-invalid': isInvalid, disabled: isDisabled || readonly ,
+    }">
         <input
             ref="input"
             v-model="model"
