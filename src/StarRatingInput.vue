@@ -95,7 +95,7 @@ export default defineComponent({
             onClick,
             onKeydown,
             locked,
-            display: computed(() => rating.value.toFixed(1)),
+            display: computed(() => rating.value?.toFixed(1)),
         };
     },
 });

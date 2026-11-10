@@ -1,6 +1,6 @@
 {
     "name": "inertia-bootstrap-forms",
-    "version": "3.0.0",
+    "version": "3.0.1",
     "description": "Bootstrap 6 form components for Vue 3 + Inertia.js (Laravel). Every field is bound to a single FormContainer v-model.",
     "type": "module",
     "main": "dist/inertia-bootstrap-forms.cjs.js",
