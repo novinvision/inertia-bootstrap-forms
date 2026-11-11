@@ -42,6 +42,15 @@ export default defineComponent({
         config: { type: Object, default: () => ({}) },
         errorHandler: { type: Function, default: null },
         showRestrictionCaption: { type: Boolean, default: true },
+        /**
+         * Extra Uppy plugins: [{ plugin: Webcam, options: { id: 'Webcam' }, dashboard: true }].
+         * Normally filled by <UppyDashboardInput>; every plugin needs an `id` to be listed in the Dashboard.
+         */
+        plugins: { type: Array, default: () => [] },
+        /** Component that renders the Uppy Dashboard (the default export of '@uppy/vue/dashboard'). Switches the UI to the Dashboard. */
+        dashboardComponent: { type: Object, default: null },
+        /** Dashboard options: { height, width, theme, note, proudlyDisplayPoweredByUppy, … }. */
+        dashboardProps: { type: Object, default: () => ({}) },
         locale: { type: String, default: null },
     },
     setup(props, { emit, expose }) {
@@ -50,6 +59,8 @@ export default defineComponent({
         const d = useDisposables();
 
         const uppy = shallowRef(null);
+        const useDashboard = computed(() => !!props.dashboardComponent);
+        const dashboardOptions = ref({});
         const area = ref(null);
         const caption = ref(null);
         const errorMessage = ref(null);
@@ -190,6 +201,14 @@ export default defineComponent({
                 });
             }
 
+            // Extra plugins (Webcam, Audio, …) are registered first, the Dashboard then picks them up by id
+            const dashboardPlugins = [];
+            props.plugins.forEach((item) => {
+                const options = { ...(item.options || {}) };
+                instance.use(item.plugin, options);
+                if (item.dashboard !== false && (options.id || item.id)) dashboardPlugins.push(options.id || item.id);
+            });
+
             d.add(() => {
                 unmounting = true;
                 setUploading(null);
@@ -197,8 +216,21 @@ export default defineComponent({
                 uppy.value = null;
             });
 
-            uppy.value = instance;
             if (props.showRestrictionCaption) caption.value = buildCaption(instance.opts?.restrictions);
+
+            dashboardOptions.value = {
+                inline: true,
+                width: '100%',
+                height: 350,
+                theme: 'auto',
+                proudlyDisplayPoweredByUppy: false,
+                note: caption.value || undefined,
+                ...props.dashboardProps,
+                plugins: [...dashboardPlugins, ...(props.dashboardProps?.plugins || [])],
+            };
+            if (useDashboard.value) caption.value = null; // the Dashboard prints the note itself
+
+            uppy.value = instance;
             emit('ready', instance);
         });
 
@@ -217,7 +249,7 @@ export default defineComponent({
 
         expose({ uppy: () => uppy.value });
 
-        return { ...field, uppy, area, caption, errorMessage };
+        return { ...field, uppy, area, caption, errorMessage, useDashboard, dashboardOptions };
     },
 });
 </script>
@@ -225,7 +257,8 @@ export default defineComponent({
 <template>
     <div v-if="uppy" ref="area" class="uppy-input-area" :id="inputId">
         <div v-if="errorMessage" class="alert theme-danger text-center py-1 mb-2" role="alert">{{ errorMessage }}</div>
-        <UppyContextProvider :name="'uu' + (name ?? 'uppy')" :uppy="uppy">
+        <component :is="dashboardComponent" v-if="useDashboard" :uppy="uppy" :props="dashboardOptions" />
+        <UppyContextProvider v-else :name="'uu' + (name ?? 'uppy')" :uppy="uppy">
             <slot :uppy="uppy">
                 <FilesList class="uppy-file-lists" />
                 <UppyDropzone class="uppy-drop-zone" />

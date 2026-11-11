@@ -1,10 +1,10 @@
 {
     "name": "inertia-bootstrap-forms",
-    "version": "3.0.2",
+    "version": "4.0.0",
     "description": "Bootstrap 6 form components for Vue 3 + Inertia.js (Laravel). Every field is bound to a single FormContainer v-model.",
     "type": "module",
-    "main": "dist/inertia-bootstrap-forms.cjs.js",
-    "module": "dist/inertia-bootstrap-forms.es.js",
+    "main": "dist/index.cjs",
+    "module": "dist/index.js",
     "types": "./index.d.ts",
     "sideEffects": false,
     "scripts": {
@@ -15,6 +15,7 @@
     "files": [
         "dist",
         "src",
+        "types",
         "index.d.ts",
         "README.md",
         "README.fa.md"
@@ -22,8 +23,48 @@
     "exports": {
         ".": {
             "types": "./index.d.ts",
-            "import": "./dist/inertia-bootstrap-forms.es.js",
-            "require": "./dist/inertia-bootstrap-forms.cjs.js"
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs"
+        },
+        "./uppy": {
+            "types": "./types/uppy.d.ts",
+            "import": "./dist/uppy.js",
+            "require": "./dist/uppy.cjs"
+        },
+        "./uppy-dashboard": {
+            "types": "./types/uppy-dashboard.d.ts",
+            "import": "./dist/uppy-dashboard.js",
+            "require": "./dist/uppy-dashboard.cjs"
+        },
+        "./dropzone": {
+            "types": "./types/dropzone.d.ts",
+            "import": "./dist/dropzone.js",
+            "require": "./dist/dropzone.cjs"
+        },
+        "./editor": {
+            "types": "./types/editor.d.ts",
+            "import": "./dist/editor.js",
+            "require": "./dist/editor.cjs"
+        },
+        "./location": {
+            "types": "./types/location.d.ts",
+            "import": "./dist/location.js",
+            "require": "./dist/location.cjs"
+        },
+        "./tel": {
+            "types": "./types/tel.d.ts",
+            "import": "./dist/tel.js",
+            "require": "./dist/tel.cjs"
+        },
+        "./persian-date": {
+            "types": "./types/persian-date.d.ts",
+            "import": "./dist/persian-date.js",
+            "require": "./dist/persian-date.cjs"
+        },
+        "./country-codes": {
+            "types": "./types/country-codes.d.ts",
+            "import": "./dist/country-codes.js",
+            "require": "./dist/country-codes.cjs"
         },
         "./src/*": "./src/*",
         "./package.json": "./package.json"
@@ -45,42 +86,84 @@
         "chips",
         "otp"
     ],
-    "dependencies": {
-        "@tinymce/tinymce-vue": "^6.1.0",
-        "@uppy/core": "^5.2.0",
-        "@uppy/vue": "^3.2.0",
-        "@uppy/xhr-upload": "^5.1.1",
-        "@vue-leaflet/vue-leaflet": "^0.10.1",
-        "vue-tel-input": "^9.3.0",
-        "vue3-persian-datetime-picker": "^1.2.2"
-    },
     "peerDependencies": {
         "@floating-ui/dom": "^1.7.6",
         "@inertiajs/vue3": ">=2.0.0",
         "bootstrap": "^6.0.0-alpha.1",
+        "vue": "^3.3.0",
+        "@tinymce/tinymce-vue": "^6.1.0",
+        "@uppy/audio": "^3.1.0",
+        "@uppy/core": "^5.2.0",
+        "@uppy/dashboard": "^5.1.1",
+        "@uppy/vue": "^3.2.0",
+        "@uppy/webcam": "^5.1.0",
+        "@uppy/xhr-upload": "^5.1.1",
+        "@vue-leaflet/vue-leaflet": "^0.10.1",
         "dropzone": "^6.0.0-beta.2",
         "leaflet": "^1.9.0",
-        "vue": "^3.3.0"
+        "vue-tel-input": "^9.3.0",
+        "vue3-persian-datetime-picker": "^1.2.2"
     },
     "peerDependenciesMeta": {
+        "@tinymce/tinymce-vue": {
+            "optional": true
+        },
+        "@uppy/audio": {
+            "optional": true
+        },
+        "@uppy/core": {
+            "optional": true
+        },
+        "@uppy/dashboard": {
+            "optional": true
+        },
+        "@uppy/vue": {
+            "optional": true
+        },
+        "@uppy/webcam": {
+            "optional": true
+        },
+        "@uppy/xhr-upload": {
+            "optional": true
+        },
+        "@vue-leaflet/vue-leaflet": {
+            "optional": true
+        },
         "dropzone": {
             "optional": true
         },
         "leaflet": {
+            "optional": true
+        },
+        "vue-tel-input": {
+            "optional": true
+        },
+        "vue3-persian-datetime-picker": {
             "optional": true
         }
     },
     "devDependencies": {
         "@floating-ui/dom": "^1.7.6",
         "@inertiajs/vue3": "^2.0.0",
+        "@tinymce/tinymce-vue": "^6.1.0",
+        "@uppy/audio": "^3.1.0",
+        "@uppy/core": "^5.2.0",
+        "@uppy/dashboard": "^5.1.1",
+        "@uppy/vue": "^3.2.0",
+        "@uppy/webcam": "^5.1.0",
+        "@uppy/xhr-upload": "^5.1.1",
         "@vitejs/plugin-vue": "^5.2.4",
+        "@vue-leaflet/vue-leaflet": "^0.10.1",
         "@vue/test-utils": "^2.4.6",
         "bootstrap": "6.0.0-alpha.1",
         "dropzone": "^6.0.0-beta.2",
         "jsdom": "^25.0.0",
+        "leaflet": "^1.9.0",
         "vite": "^5",
         "vitest": "^2.1.0",
-        "vue": "^3.5.0"
+        "vue": "^3.5.0",
+        "vue-tel-input": "^9.3.0",
+        "vue3-persian-datetime-picker": "^1.2.2"
     },
     "bugs": {
         "url": "https://github.com/novinvision/inertia-bootstrap-forms/issues"

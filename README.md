@@ -61,19 +61,40 @@ Built and maintained by **[Novin Vision](https://novinvision.com)** (نوین و
 | `@inertiajs/vue3` ≥ 2.0 | `FormContainer` uses `useForm()` |
 | `bootstrap` ^6.0.0-alpha.1 | **CSS** is required. The JS plugins are imported by this package on demand. |
 | `@floating-ui/dom` | Peer dependency of Bootstrap 6 menus (needed by Combobox / MultiQuantityInput) |
-| `dropzone` ^6 | Only for `DropzoneInput` |
-| `leaflet` | Only for `LocationInput` |
 
-Third-party widgets are regular dependencies of this package and are loaded lazily: `vue-tel-input`,
-`vue3-persian-datetime-picker`, `@tinymce/tinymce-vue`, `@vue-leaflet/vue-leaflet`, `@uppy/*`.
+**Nothing else is installed with this package.** Heavy third-party widgets are *optional peer dependencies*: install
+them only when you use the matching component (see [Optional components](#optional-components)).
 
 ## Installation
 
 ```bash
 npm install inertia-bootstrap-forms bootstrap@next @floating-ui/dom
-# optional
-npm install dropzone leaflet
 ```
+
+### Optional components
+
+Components that wrap a heavy library live in their **own entry point** and the library is an **optional peer
+dependency**. The main entry never references them, so apps that do not use them install and bundle nothing extra.
+
+| Component | Import from | Install | CSS to import |
+|---|---|---|---|
+| `UppyInput` ¹ | `inertia-bootstrap-forms/uppy` | `npm i @uppy/core@^5.2 @uppy/vue@^3.2 @uppy/xhr-upload@^5.1` | `@uppy/vue/css/style.css` |
+| `UppyDashboardInput` (Uppy Dashboard + camera + voice recorder) | `inertia-bootstrap-forms/uppy-dashboard` | the three above + `npm i @uppy/dashboard@^5.1 @uppy/webcam@^5.1 @uppy/audio@^3.1` | `@uppy/dashboard`, `@uppy/webcam`, `@uppy/audio` → `dist/style.min.css` |
+| `DropzoneInput` ¹ | `inertia-bootstrap-forms/dropzone` | `npm i dropzone@^6.0.0-beta.2` | `dropzone/dist/basic.css`, `dropzone/dist/dropzone.css` |
+| `EditorInput` ¹ | `inertia-bootstrap-forms/editor` | `npm i @tinymce/tinymce-vue` (+ TinyMCE) | — |
+| `LocationInput` ¹ | `inertia-bootstrap-forms/location` | `npm i leaflet @vue-leaflet/vue-leaflet` | `leaflet/dist/leaflet.css` |
+| `TelInput` ¹ | `inertia-bootstrap-forms/tel` | `npm i vue-tel-input` | `vue-tel-input/vue-tel-input.css` |
+| `PersianDatePickerInput` | `inertia-bootstrap-forms/persian-date` | `npm i vue3-persian-datetime-picker` | — |
+| `countryCodes` (data) | `inertia-bootstrap-forms/country-codes` | — | — |
+
+```js
+import { FormContainer, TextInput, ComboboxInput } from 'inertia-bootstrap-forms';
+import { UppyInput } from 'inertia-bootstrap-forms/uppy';
+import { TelInput } from 'inertia-bootstrap-forms/tel';
+```
+
+> Keep all `@uppy/*` packages on the same major line (`@uppy/core@5`): plugins only work with the `@uppy/core`
+> instance they were built for. A bare `npm i @uppy/webcam` installs the newest major, which needs `@uppy/core@6`.
 
 ### Import the styles in your application
 
@@ -84,6 +105,7 @@ widgets you use — the CSS of the third-party libraries:
 // resources/js/app.js
 import 'bootstrap/dist/css/bootstrap.min.css';          // Bootstrap 6 (required)
 
+// only for the optional components you use — see the table in "Optional components"
 import 'vue-tel-input/vue-tel-input.css';               // TelInput
 import 'leaflet/dist/leaflet.css';                      // LocationInput
 import 'dropzone/dist/basic.css';                       // DropzoneInput
@@ -103,7 +125,8 @@ configureBootstrap({ Combobox, Chips, OtpInput, Range, Menu });
 
 ### Registering components
 
-Import what you need, or install the plugin to register everything globally:
+Import what you need, or install the plugin to register all **built-in (light)** components globally. Components from the
+[optional entries](#optional-components) are registered by you (`app.component('UppyInput', UppyInput)`):
 
 ```js
 import InertiaBootstrapForms from 'inertia-bootstrap-forms';
@@ -299,6 +322,9 @@ Replaces `Select2Input` (choices.js). `Select2Input` is still exported as an ali
 | `search` | `object` | `{ url: null }` | **Remote search**: `{ url, method='POST', param='query', debounce=400, minChars=0, headers, resultsKey='data' }` |
 | `clearable` | `boolean` | `false` | Adds an entry that clears a single select |
 | `clearText`, `noResultsText`, `loadingText`, `searchPlaceholder`, `selectedText` | `string` | i18n | `selectedText` supports `{count}` |
+| `showSelected` | `boolean` | `false` | Multiple only: show the chosen options instead of the "N selected" counter |
+| `maxVisible` | `number` | `null` | With `showSelected`: above this many chosen options the counter is shown |
+| `selectedSeparator` | `string` | locale | Separator between the chosen labels |
 | `placement` | `string` | `'bottom-start'` | Floating UI placement |
 | `size`, `hideDropdown`, `searchNormalize`, `locale` | | | |
 
@@ -311,6 +337,18 @@ Exposed: `show()`, `hide()`, `toggle()`, `clear()`, `focus()`.
 <ComboboxInput name="customer" :search="{ url: '/api/customers', debounce: 300 }" />   <!-- remote -->
 
 <ComboboxInput name="tags" multiple search-enabled :options="tags" />
+```
+
+**Slots** — `#option` formats every menu item, `#selection` formats the value shown in the toggle (both receive `option`, `label`, `description`, `value`; `#option` also `selected`, `disabled`):
+
+```vue
+<ComboboxInput name="plan" :options="plans">
+    <template #option="{ option, label, description }">
+        <span class="d-flex align-items-center gap-2"><Icon :icon="option.icon" /><strong>{{ label }}</strong></span>
+        <small class="fg-secondary">{{ description }}</small>
+    </template>
+    <template #selection="{ option, label }"><Icon :icon="option.icon" /> {{ label }}</template>
+</ComboboxInput>
 ```
 
 The remote endpoint receives `?query=…` and must answer with a JSON array (or `{ data: [] }`). The `X-XSRF-TOKEN` cookie is forwarded automatically. Selected options always keep their label even when they are not part of the latest results.
@@ -364,12 +402,42 @@ Value: `number`. Events: `update:modelValue`, `change`, `input`, `focus`, `blur`
 |---|---|
 | `StarRatingInput` | `maxStars`, `precision` (steps per star), `showValue`, `clearable`, `value`; pointer + keyboard, RTL aware, `role="slider"` |
 | `CaptchaInput` | `url`, `placeholder`, `refreshOnSubmit`, `imageWidth`, `imageHeight`; event `refresh` |
-| `PersianDatePickerInput` | `calendar`, `view`, `min`, `max`, `range`, `format`, `inputFormat`, `pickerOptions`, `inputClass`; events `open`, `close` |
+| `PersianDatePickerInput` ¹ | `calendar`, `view`, `min`, `max`, `range`, `format`, `inputFormat`, `pickerOptions`, `inputClass`; events `open`, `close` |
 | `EditorInput` | TinyMCE: `options`, `height`, `placeholder`, `apiKey`, `tinymceScriptSrc`; event `init` |
 | `LocationInput` | Leaflet: `center`, `zoom`, `height`, `tileUrl`, `attribution`; value `{ lat, lng }`; event `ready` |
 | `FileInput` (`SimpleUploader`) | `multiple`, `endpoint`, `accept`, `headers`, `fieldName`; events `added`, `progress`, `uploaded`, `error`, `removed` |
 | `DropzoneInput` | `multiple`, `url`, `options`, `headers`; events `ready`, `added`, `success`, `error`, `removed`, `complete` |
 | `UppyInput` | `multiple`, `useXHR`, `XHRConfig`, `url`, `config`, `errorHandler`, `showRestrictionCaption`; all Uppy events are re-emitted |
+
+¹ Optional entry — see [Optional components](#optional-components) for the import path and the library to install.
+
+#### `UppyDashboardInput` — camera and voice recorder
+
+`UppyInput` with the Uppy Dashboard UI and the official `@uppy/webcam` / `@uppy/audio` plugins. All `UppyInput`
+props and events work as well.
+
+```vue
+<script setup>
+import { UppyDashboardInput } from 'inertia-bootstrap-forms/uppy-dashboard';
+</script>
+
+<UppyDashboardInput name="media" webcam audio />
+<UppyDashboardInput name="photo" :webcam="{ modes: ['picture'], mirror: true }" />
+<UppyDashboardInput name="voice" :audio="{ showAudioSourceDropdown: true }"
+    :config="{ restrictions: { allowedFileTypes: ['audio/*'], maxNumberOfFiles: 1 } }"
+    :dashboard-props="{ height: 300 }" />
+```
+
+| Prop | Description |
+|---|---|
+| `webcam` | `true` or [`@uppy/webcam` options](https://uppy.io/docs/webcam/) |
+| `audio` | `true` or [`@uppy/audio` options](https://uppy.io/docs/audio/) |
+| `dashboardProps` | Uppy Dashboard options (`height`, `theme`, `note`, …) |
+
+Camera and microphone need **HTTPS** (or `localhost`). Remember to allow `image/*`, `video/*` and `audio/*` in
+`restrictions.allowedFileTypes` when you restrict file types. The recorded audio format depends on the browser.
+
+`UppyInput` itself also accepts `plugins` (`[{ plugin, options: { id } }]`) and `dashboardComponent` for custom Uppy plugins.
 
 ---
 
@@ -444,6 +512,25 @@ Also exported: `useFormApi()`, `useDisposables()`, `useBsInstance()`, `configure
 | `vue3-bootstrap-components`, `choices.js`, `svelte-range-slider-pips` bundled | removed |
 | `name` was `required` | optional — omit it for standalone `v-model` usage |
 | Peer: Bootstrap 5 CSS | Peer: `bootstrap@^6.0.0-alpha.1`, `@floating-ui/dom` |
+
+### Migrating from v3 to v4
+
+v4 makes the package as light as possible: **nothing but your own peers is installed**. The components that wrap heavy
+libraries moved to their own entry points (and their libraries are optional peers):
+
+```diff
+- import { UppyInput, DropzoneInput, EditorInput, LocationInput, TelInput, PersianDatePickerInput, countryCodes } from 'inertia-bootstrap-forms';
++ import { UppyInput } from 'inertia-bootstrap-forms/uppy';
++ import { DropzoneInput } from 'inertia-bootstrap-forms/dropzone';
++ import { EditorInput } from 'inertia-bootstrap-forms/editor';
++ import { LocationInput } from 'inertia-bootstrap-forms/location';
++ import { TelInput } from 'inertia-bootstrap-forms/tel';
++ import { PersianDatePickerInput } from 'inertia-bootstrap-forms/persian-date';
++ import { countryCodes } from 'inertia-bootstrap-forms/country-codes';
+```
+
+Install the libraries of the components you use ([table](#optional-components)). The global plugin no longer registers them.
+`UppyInput`'s `webcam` / `audio` props moved to `UppyDashboardInput`.
 
 ## Notes and known limitations
 

@@ -63,18 +63,37 @@
 | `@inertiajs/vue3` ‎≥ 2.0 | `FormContainer` از `useForm()` استفاده می‌کند |
 | `bootstrap` ‎^6.0.0-alpha.1 | **CSS** الزامی است. پلاگین‌های JS را خود پکیج در صورت نیاز بارگذاری می‌کند. |
 | `@floating-ui/dom` | وابستگی منوهای Bootstrap 6 (برای Combobox و MultiQuantityInput) |
-| `dropzone` ‎^6 | فقط برای `DropzoneInput` |
-| `leaflet` | فقط برای `LocationInput` |
 
-کتابخانه‌های جانبی جزو dependencies خود پکیج هستند و lazy بارگذاری می‌شوند: `vue-tel-input`، `vue3-persian-datetime-picker`، `@tinymce/tinymce-vue`، `@vue-leaflet/vue-leaflet` و `@uppy/*`.
+**هیچ چیز دیگری همراه این پکیج نصب نمی‌شود.** کتابخانه‌های سنگین جانبی *optional peer dependency* هستند؛ فقط اگر کامپوننت مربوطه را استفاده می‌کنید نصبشان کنید (بخش [کامپوننت‌های اختیاری](#کامپوننتهای-اختیاری)).
 
 ## نصب
 
 ```bash
 npm install inertia-bootstrap-forms bootstrap@next @floating-ui/dom
-# اختیاری
-npm install dropzone leaflet
 ```
+
+### کامپوننت‌های اختیاری
+
+کامپوننت‌هایی که یک کتابخانهٔ سنگین را پوشش می‌دهند **entry جداگانه** دارند و کتابخانه‌شان **optional peer** است. entry اصلی هرگز به آن‌ها اشاره نمی‌کند، پس اپلیکیشنی که از آن‌ها استفاده نمی‌کند چیزی اضافه نصب یا bundle نمی‌کند.
+
+| کامپوننت | import از | نصب | CSS برای import |
+|---|---|---|---|
+| `UppyInput` ¹ | `inertia-bootstrap-forms/uppy` | `npm i @uppy/core@^5.2 @uppy/vue@^3.2 @uppy/xhr-upload@^5.1` | `@uppy/vue/css/style.css` |
+| `UppyDashboardInput` (Dashboard + دوربین + ضبط صدا) | `inertia-bootstrap-forms/uppy-dashboard` | سه مورد بالا + `npm i @uppy/dashboard@^5.1 @uppy/webcam@^5.1 @uppy/audio@^3.1` | ‏`dist/style.min.css` از `@uppy/dashboard`، `@uppy/webcam` و `@uppy/audio` |
+| `DropzoneInput` ¹ | `inertia-bootstrap-forms/dropzone` | `npm i dropzone@^6.0.0-beta.2` | `dropzone/dist/basic.css` و `dropzone/dist/dropzone.css` |
+| `EditorInput` ¹ | `inertia-bootstrap-forms/editor` | `npm i @tinymce/tinymce-vue` (+ TinyMCE) | — |
+| `LocationInput` ¹ | `inertia-bootstrap-forms/location` | `npm i leaflet @vue-leaflet/vue-leaflet` | `leaflet/dist/leaflet.css` |
+| `TelInput` ¹ | `inertia-bootstrap-forms/tel` | `npm i vue-tel-input` | `vue-tel-input/vue-tel-input.css` |
+| `PersianDatePickerInput` ¹ | `inertia-bootstrap-forms/persian-date` | `npm i vue3-persian-datetime-picker` | — |
+| `countryCodes` (داده) | `inertia-bootstrap-forms/country-codes` | — | — |
+
+```js
+import { FormContainer, TextInput, ComboboxInput } from 'inertia-bootstrap-forms';
+import { UppyInput } from 'inertia-bootstrap-forms/uppy';
+import { TelInput } from 'inertia-bootstrap-forms/tel';
+```
+
+> همهٔ پکیج‌های `@uppy/*` را روی یک major نگه دارید (`@uppy/core@5`): پلاگین‌ها فقط با همان نمونهٔ `@uppy/core` که برایش ساخته شده‌اند کار می‌کنند. دستور ساده `npm i @uppy/webcam` جدیدترین major را نصب می‌کند که به `@uppy/core@6` نیاز دارد.
 
 ### import استایل‌ها در پروژه شما
 
@@ -84,6 +103,7 @@ npm install dropzone leaflet
 // resources/js/app.js
 import 'bootstrap/dist/css/bootstrap.min.css';          // Bootstrap 6 (الزامی)
 
+// فقط برای کامپوننت‌های اختیاری که استفاده می‌کنید — جدول «کامپوننت‌های اختیاری» را ببینید
 import 'vue-tel-input/vue-tel-input.css';               // TelInput
 import 'leaflet/dist/leaflet.css';                      // LocationInput
 import 'dropzone/dist/basic.css';                       // DropzoneInput
@@ -103,7 +123,7 @@ configureBootstrap({ Combobox, Chips, OtpInput, Range, Menu });
 
 ### ثبت کامپوننت‌ها
 
-هر کامپوننتی را که لازم دارید import کنید، یا با نصب پلاگین همه را سراسری ثبت کنید:
+هر کامپوننتی را که لازم دارید import کنید، یا با نصب پلاگین همهٔ کامپوننت‌های **داخلی (سبک)** را سراسری ثبت کنید. کامپوننت‌های [entryهای اختیاری](#کامپوننتهای-اختیاری) را خودتان ثبت کنید (`app.component('UppyInput', UppyInput)`):
 
 ```js
 import InertiaBootstrapForms from 'inertia-bootstrap-forms';
@@ -298,6 +318,9 @@ Slot ها: پیش‌فرض، `label`، `help`، `error`.
 | `search` | `object` | `{ url: null }` | **جستجوی remote**: `{ url, method='POST', param='query', debounce=400, minChars=0, headers, resultsKey='data' }` |
 | `clearable` | `boolean` | `false` | افزودن گزینه‌ای برای پاک کردن انتخاب (تک‌انتخابی) |
 | `clearText`، `noResultsText`، `loadingText`، `searchPlaceholder`، `selectedText` | `string` | i18n | `selectedText` از `{count}` پشتیبانی می‌کند |
+| `showSelected` | `boolean` | `false` | فقط چندانتخابی: به‌جای شمارنده «N مورد انتخاب شده»، خود گزینه‌های انتخاب‌شده را نشان بده |
+| `maxVisible` | `number` | `null` | همراه `showSelected`: اگر تعداد انتخاب‌ها بیشتر شد شمارنده نشان داده می‌شود |
+| `selectedSeparator` | `string` | بر اساس زبان | جداکننده بین برچسب‌های انتخاب‌شده |
 | `placement` | `string` | `'bottom-start'` | placement کتابخانه Floating UI |
 | `size`، `hideDropdown`، `searchNormalize`، `locale` | | | |
 
@@ -310,6 +333,18 @@ Event ها: `update:modelValue`، `change`، `selected` (گزینه/گزینه�
 <ComboboxInput name="customer" :search="{ url: '/api/customers', debounce: 300 }" />   <!-- remote -->
 
 <ComboboxInput name="tags" multiple search-enabled :options="tags" />
+```
+
+**Slot ها** — `#option` ظاهر هر گزینه منو و `#selection` ظاهر مقدار نمایش‌داده‌شده روی دکمه را مشخص می‌کند (هر دو `option`، `label`، `description`، `value` می‌گیرند؛ `#option` علاوه بر آن `selected` و `disabled`):
+
+```vue
+<ComboboxInput name="plan" :options="plans">
+    <template #option="{ option, label, description }">
+        <span class="d-flex align-items-center gap-2"><Icon :icon="option.icon" /><strong>{{ label }}</strong></span>
+        <small class="fg-secondary">{{ description }}</small>
+    </template>
+    <template #selection="{ option, label }"><Icon :icon="option.icon" /> {{ label }}</template>
+</ComboboxInput>
 ```
 
 endpoint جستجو `?query=…` را دریافت می‌کند و باید آرایه JSON (یا `{ data: [] }`) برگرداند. کوکی `XSRF-TOKEN` خودکار ارسال می‌شود. گزینه‌های انتخاب‌شده حتی اگر در آخرین نتایج نباشند برچسب خود را حفظ می‌کنند.
@@ -369,6 +404,34 @@ Event ها: `update:modelValue`، `change`، `input`، `complete`، `focus`، `b
 | `FileInput` (`SimpleUploader`) | `multiple`، `endpoint`، `accept`، `headers`، `fieldName`؛ eventها: `added`، `progress`، `uploaded`، `error`، `removed` |
 | `DropzoneInput` | `multiple`، `url`، `options`، `headers`؛ eventها: `ready`، `added`، `success`، `error`، `removed`، `complete` |
 | `UppyInput` | `multiple`، `useXHR`، `XHRConfig`، `url`، `config`، `errorHandler`، `showRestrictionCaption`؛ همه eventهای Uppy دوباره emit می‌شوند |
+
+¹ entry اختیاری — مسیر import و کتابخانهٔ لازم را در [کامپوننت‌های اختیاری](#کامپوننتهای-اختیاری) ببینید.
+
+#### ‏`UppyDashboardInput` — دوربین و ضبط صدا
+
+همان `UppyInput` با رابط Dashboard و پلاگین‌های رسمی `@uppy/webcam` و `@uppy/audio`. همهٔ props و eventهای `UppyInput` اینجا هم کار می‌کنند.
+
+```vue
+<script setup>
+import { UppyDashboardInput } from 'inertia-bootstrap-forms/uppy-dashboard';
+</script>
+
+<UppyDashboardInput name="media" webcam audio />
+<UppyDashboardInput name="photo" :webcam="{ modes: ['picture'], mirror: true }" />
+<UppyDashboardInput name="voice" :audio="{ showAudioSourceDropdown: true }"
+    :config="{ restrictions: { allowedFileTypes: ['audio/*'], maxNumberOfFiles: 1 } }"
+    :dashboard-props="{ height: 300 }" />
+```
+
+| Prop | توضیح |
+|---|---|
+| `webcam` | ‏`true` یا [گزینه‌های `@uppy/webcam`](https://uppy.io/docs/webcam/) |
+| `audio` | ‏`true` یا [گزینه‌های `@uppy/audio`](https://uppy.io/docs/audio/) |
+| `dashboardProps` | گزینه‌های Dashboard ‏(`height`، `theme`، `note` و …) |
+
+دوربین و میکروفون فقط روی **HTTPS** (یا `localhost`) کار می‌کنند. اگر نوع فایل را محدود می‌کنید، `image/*`، `video/*` و `audio/*` را در `restrictions.allowedFileTypes` مجاز کنید. فرمت فایل صوتی را مرورگر تعیین می‌کند.
+
+خود `UppyInput` هم برای پلاگین‌های سفارشی Uppy، propهای `plugins` ‏(`[{ plugin, options: { id } }]`) و `dashboardComponent` را می‌پذیرد.
 
 ---
 
@@ -443,6 +506,23 @@ const { model, inputId, isInvalid, isDisabled, emitChange } = useField(props, em
 | ‏`vue3-bootstrap-components`، `choices.js`، `svelte-range-slider-pips` داخل bundle بودند | حذف شدند |
 | ‏`name` الزامی بود | اختیاری است — برای استفاده مستقل با `v-model` می‌توان آن را نداد |
 | پیش‌نیاز: CSS بوت‌استرپ 5 | پیش‌نیاز: ‏`bootstrap@^6.0.0-alpha.1` و `@floating-ui/dom` |
+
+### مهاجرت از نسخه 3 به 4
+
+نسخهٔ ۴ پکیج را تا حد ممکن سبک می‌کند: **جز peerهای خودتان چیزی نصب نمی‌شود**. کامپوننت‌هایی که کتابخانهٔ سنگین را پوشش می‌دهند به entry جداگانه رفتند (و کتابخانه‌هایشان optional peer هستند):
+
+```diff
+- import { UppyInput, DropzoneInput, EditorInput, LocationInput, TelInput, PersianDatePickerInput, countryCodes } from 'inertia-bootstrap-forms';
++ import { UppyInput } from 'inertia-bootstrap-forms/uppy';
++ import { DropzoneInput } from 'inertia-bootstrap-forms/dropzone';
++ import { EditorInput } from 'inertia-bootstrap-forms/editor';
++ import { LocationInput } from 'inertia-bootstrap-forms/location';
++ import { TelInput } from 'inertia-bootstrap-forms/tel';
++ import { PersianDatePickerInput } from 'inertia-bootstrap-forms/persian-date';
++ import { countryCodes } from 'inertia-bootstrap-forms/country-codes';
+```
+
+کتابخانهٔ کامپوننت‌هایی را که استفاده می‌کنید نصب کنید ([جدول](#کامپوننتهای-اختیاری)). پلاگین سراسری دیگر آن‌ها را ثبت نمی‌کند. propهای `webcam` و `audio` از `UppyInput` به `UppyDashboardInput` منتقل شدند.
 
 ## نکات و محدودیتها
 

@@ -31,7 +31,7 @@ export default defineComponent({
 </script>
 
 <template>
-    <div :class="{
+  <div :class="{
       'form-field': formField,
       'form-field-card': formFieldCard,
       'is-invalid': isInvalid, disabled: isDisabled || readonly ,

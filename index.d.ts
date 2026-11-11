@@ -14,7 +14,7 @@ export interface FieldProps {
     invalid?: boolean | null;
 }
 
-type Comp<P = {}, E = {}> = DefineComponent<FieldProps & P, {}, {}, {}, {}, {}, {}, E>;
+export type FieldComponent<P = {}, E = {}> = DefineComponent<FieldProps & P, {}, {}, {}, {}, {}, {}>;
 
 export type Locale = 'auto' | 'en' | 'fa' | (string & {});
 export type OptionItem = string | number | { [key: string]: any; disabled?: boolean; description?: string };
@@ -49,28 +49,45 @@ export declare const FormLabel: DefineComponent<{ for?: string | null; required?
 export declare const GroupControl: DefineComponent<{ name: string; index?: number | string | null }>;
 export declare const SubmitButton: DefineComponent<{ disabled?: boolean; loading?: boolean | null; variant?: string | null; theme?: string; locale?: Locale | null }>;
 
-export declare const TextInput: Comp<{ type?: string; placeholder?: string | null; size?: 'sm' | 'lg' | null }>;
-export declare const TextAreaInput: Comp<{ rows?: number | string; placeholder?: string | null; size?: 'sm' | 'lg' | null }>;
-export declare const EmailInput: Comp<{ placeholder?: string | null; locale?: Locale | null }>;
-export declare const PasswordInput: Comp<{ placeholder?: string | null; toggle?: boolean; locale?: Locale | null }>;
-export declare const MobileInput: Comp<{ placeholder?: string | null; locale?: Locale | null }>;
-export declare const TelInput: Comp<{ placeholder?: string; defaultCountry?: string; preferredCountries?: string[]; mode?: string; validCharactersOnly?: boolean; validate?: boolean; dropdownOptions?: object; inputOptions?: object }>;
-export declare const FormAdornInput: Comp<{ type?: string; placeholder?: string | null; startText?: string | null; endText?: string | null; size?: 'sm' | 'lg' | null }>;
+export declare const TextInput: FieldComponent<{ type?: string; placeholder?: string | null; size?: 'sm' | 'lg' | null }>;
+export declare const TextAreaInput: FieldComponent<{ rows?: number | string; placeholder?: string | null; size?: 'sm' | 'lg' | null }>;
+export declare const EmailInput: FieldComponent<{ placeholder?: string | null; locale?: Locale | null }>;
+export declare const PasswordInput: FieldComponent<{ placeholder?: string | null; toggle?: boolean; strength?: boolean; strengthText?: boolean; strengthMessages?: { weak?: string; fair?: string; good?: string; strong?: string } | null; strengthOptions?: { minLength?: number; thresholds?: number[]; weights?: object; scorer?: (password: string) => number }; size?: 'sm' | 'lg' | null; locale?: Locale | null }>;
+export declare const MobileInput: FieldComponent<{ placeholder?: string | null; locale?: Locale | null }>;
+export declare const FormAdornInput: FieldComponent<{ type?: string; placeholder?: string | null; startText?: string | null; endText?: string | null; size?: 'sm' | 'lg' | null }>;
 export declare const FormAdorn: typeof FormAdornInput;
 
-export declare const AmountInput: Comp<{ placeholder?: string | null; unit?: string | null; min?: number | null; max?: number | null; size?: 'sm' | 'lg' | null; locale?: Locale | null }>;
-export declare const QuantityInput: Comp<{ min?: number; max?: number | null; step?: number; unit?: string | null; locale?: Locale | null }>;
-export declare const MultiQuantityInput: Comp<{ options?: Array<string | { name: string; min?: number; max?: number; description?: string; html?: boolean }>; min?: number; max?: number | null; totalMin?: number | null; totalMax?: number | null; unit?: string | null; placement?: string; locale?: Locale | null }>;
-export declare const RangeInput: Comp<{ min?: number; max?: number; step?: number; bubble?: boolean; formatter?: ((v: number) => string) | null; ticks?: Array<number | { value: number; label: string }> }>;
+export declare const AmountInput: FieldComponent<{ placeholder?: string | null; unit?: string | null; min?: number | null; max?: number | null; size?: 'sm' | 'lg' | null; locale?: Locale | null }>;
+export declare const QuantityInput: FieldComponent<{ min?: number; max?: number | null; step?: number; unit?: string | null; locale?: Locale | null }>;
+export declare const MultiQuantityInput: FieldComponent<{ options?: Array<string | { name: string; min?: number; max?: number; description?: string; html?: boolean }>; min?: number; max?: number | null; totalMin?: number | null; totalMax?: number | null; unit?: string | null; placement?: string; locale?: Locale | null }>;
+export declare const RangeInput: FieldComponent<{ min?: number; max?: number; step?: number; bubble?: boolean; formatter?: ((v: number) => string) | null; ticks?: Array<number | { value: number; label: string }> }>;
 export declare const RangeSliderInput: typeof RangeInput;
-export declare const StarRatingInput: Comp<{ value?: number; maxStars?: number; precision?: number; showValue?: boolean; clearable?: boolean }>;
+export declare const StarRatingInput: FieldComponent<{ value?: number; maxStars?: number; precision?: number; showValue?: boolean; clearable?: boolean }>;
 
-export declare const CheckboxInput: Comp<{ type?: 'checkbox' | 'radio'; value?: any; trueValue?: any; falseValue?: any; checked?: boolean; indeterminate?: boolean; label?: string | null }>;
-export declare const SwitchInput: Comp<{ value?: any; trueValue?: any; falseValue?: any; checked?: boolean; label?: string | null }>;
-export declare const CheckboxButtonInput: Comp<{ type?: 'checkbox' | 'radio'; value?: any; trueValue?: any; falseValue?: any; checked?: boolean; variant?: string; theme?: string }>;
-export declare const CheckboxToggle: Comp<{ type?: 'checkbox' | 'radio'; value?: any; trueValue?: any; falseValue?: any; checked?: boolean; hideInput?: boolean }>;
+export declare const CheckboxInput: FieldComponent<{ type?: 'checkbox' | 'radio'; value?: any; trueValue?: any; falseValue?: any; checked?: boolean; indeterminate?: boolean; label?: string | null }>;
+export declare const SwitchInput: FieldComponent<{ value?: any; trueValue?: any; falseValue?: any; checked?: boolean; label?: string | null }>;
+export declare const CheckboxButtonInput: FieldComponent<{ type?: 'checkbox' | 'radio'; value?: any; trueValue?: any; falseValue?: any; checked?: boolean; variant?: string; theme?: string }>;
+export declare const CheckboxToggle: FieldComponent<{ type?: 'checkbox' | 'radio'; value?: any; trueValue?: any; falseValue?: any; checked?: boolean; hideInput?: boolean, formField?: boolean, formFieldCard?: boolean }>;
+export declare const VoiceRecorderInput: FieldComponent<{
+    variant?: 'box' | 'button';
+    url?: string;
+    fieldName?: string;
+    multiple?: boolean;
+    headers?: Record<string, string>;
+    maxDuration?: number | null;
+    audioBitsPerSecond?: number;
+    audioConstraints?: MediaTrackConstraints;
+    buttonClass?: string | string[] | Record<string, boolean>;
+    recordingClass?: string | string[] | Record<string, boolean>;
+    showList?: boolean;
+    deleteOnRemove?: boolean;
+    playbackUrl?: (value: any) => string;
+    startText?: string | null;
+    stopText?: string | null;
+    locale?: Locale | null;
+}>;
 
-export declare const ComboboxInput: Comp<{
+export declare const ComboboxInput: FieldComponent<{
     options?: OptionItem[];
     valueKey?: string | null;
     labelKey?: string | null;
@@ -86,6 +103,9 @@ export declare const ComboboxInput: Comp<{
     noResultsText?: string | null;
     loadingText?: string | null;
     selectedText?: string | null;
+    showSelected?: boolean;
+    maxVisible?: number | null;
+    selectedSeparator?: string | null;
     searchNormalize?: boolean;
     placement?: string;
     size?: 'sm' | 'lg' | null;
@@ -94,23 +114,17 @@ export declare const ComboboxInput: Comp<{
 }>;
 /** @deprecated alias of ComboboxInput */
 export declare const Select2Input: typeof ComboboxInput;
-export declare const ChipsInput: Comp<{ placeholder?: string | null; separator?: string | null; allowDuplicates?: boolean; maxChips?: number | null; dismissible?: boolean; dismissIcon?: string | null; createOnBlur?: boolean; validator?: ((value: string) => boolean) | null; locale?: Locale | null }>;
-export declare const OTPInput: Comp<{ length?: number | null; maxLength?: number | null; type?: 'numeric' | 'alphanumeric' | 'alpha'; mask?: boolean; groups?: number[] | null; separator?: string; autoSubmit?: boolean; autofocus?: boolean }>;
+export declare const ChipsInput: FieldComponent<{ placeholder?: string | null; separator?: string | null; allowDuplicates?: boolean; maxChips?: number | null; dismissible?: boolean; dismissIcon?: string | null; createOnBlur?: boolean; validator?: ((value: string) => boolean) | null; locale?: Locale | null }>;
+export declare const OTPInput: FieldComponent<{ length?: number | null; maxLength?: number | null; type?: 'numeric' | 'alphanumeric' | 'alpha'; mask?: boolean; groups?: number[] | null; separator?: string; autoSubmit?: boolean; autofocus?: boolean }>;
 
-export declare const PersianDatePickerInput: Comp<{ calendar?: string; view?: string; min?: string | null; max?: string | null; range?: boolean; locale?: string; format?: string; inputFormat?: string | null; placeholder?: string | null; inputClass?: string; pickerOptions?: object }>;
-export declare const EditorInput: Comp<{ placeholder?: string; options?: object; height?: number | string | null; tinymceScriptSrc?: string | null; apiKey?: string | null }>;
-export declare const LocationInput: Comp<{ center?: { lat: number; lng: number }; zoom?: number; height?: number | string; tileUrl?: string; attribution?: string }>;
-export declare const CaptchaInput: Comp<{ url?: string; placeholder?: string | null; refreshOnSubmit?: boolean; imageWidth?: number | string; imageHeight?: number | string; locale?: Locale | null }>;
+export declare const CaptchaInput: FieldComponent<{ url?: string; placeholder?: string | null; refreshOnSubmit?: boolean; imageWidth?: number | string; imageHeight?: number | string; locale?: Locale | null }>;
 
-export declare const FileInput: Comp<{ multiple?: boolean; endpoint?: string; accept?: string | null; headers?: Record<string, string>; fieldName?: string; locale?: Locale | null }>;
+export declare const FileInput: FieldComponent<{ multiple?: boolean; endpoint?: string; accept?: string | null; headers?: Record<string, string>; fieldName?: string; locale?: Locale | null }>;
 /** @deprecated alias of FileInput */
 export declare const SimpleUploader: typeof FileInput;
-export declare const DropzoneInput: Comp<{ multiple?: boolean; url?: string; options?: object; headers?: Record<string, string>; locale?: Locale | null }>;
-export declare const UppyInput: Comp<{ multiple?: boolean; useXHR?: boolean; XHRConfig?: object; url?: string; config?: object; errorHandler?: ((m: any) => void) | null; showRestrictionCaption?: boolean; locale?: Locale | null }>;
 
-export declare const countryCodes: Array<{ country: string; code: string; iso: string }>;
 
-export interface BootstrapPlugins { Combobox?: any; Chips?: any; OtpInput?: any; Range?: any; Menu?: any }
+export interface BootstrapPlugins { Combobox?: any; Chips?: any; OtpInput?: any; Range?: any; Menu?: any; Strength?: any }
 export declare function configureBootstrap(modules: BootstrapPlugins): void;
 export declare function configureI18n(options: { locale?: Locale; messages?: Record<string, Record<string, string>> }): void;
 
@@ -136,7 +150,7 @@ export declare function useDisposables(): {
     dispose: () => void;
     isDisposed: () => boolean;
 };
-export declare function useBsInstance(name: 'Combobox' | 'Chips' | 'OtpInput' | 'Range' | 'Menu', getElement: () => HTMLElement | null, getConfig: () => object, hooks?: { onCreate?: (instance: any, el: HTMLElement) => void; onDestroy?: (instance: any, el: HTMLElement | null) => void }): { instance: Ref<any>; create: () => Promise<any>; destroy: () => void };
+export declare function useBsInstance(name: 'Combobox' | 'Chips' | 'OtpInput' | 'Range' | 'Menu' | 'Strength', getElement: () => HTMLElement | null, getConfig: () => object, hooks?: { onCreate?: (instance: any, el: HTMLElement) => void; onDestroy?: (instance: any, el: HTMLElement | null) => void }): { instance: Ref<any>; create: () => Promise<any>; destroy: () => void };
 export declare function toEnglishDigits(input: unknown): string;
 
 declare const plugin: Plugin;
