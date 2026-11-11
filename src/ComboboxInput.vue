@@ -67,7 +67,7 @@ export default defineComponent({
          * Multiple select only: show the chosen options themselves (true) instead of the
          * "N selected" counter (false, default).
          */
-        showSelected: { type: Boolean, default: false },
+        showSelected: { type: Boolean, default: true },
         /** With `showSelected`: above this many chosen options the counter is shown instead. */
         maxVisible: { type: Number, default: null },
         /** Separator between the chosen labels (default: "، " for fa, ", " otherwise). */
