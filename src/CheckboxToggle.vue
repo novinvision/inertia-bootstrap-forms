@@ -57,3 +57,8 @@ export default defineComponent({
         <label :for="inputId"><slot /></label>
     </div>
 </template>
+<style>
+.form-field.is-invalid{
+  border-color: var(--danger-border);
+}
+</style>
