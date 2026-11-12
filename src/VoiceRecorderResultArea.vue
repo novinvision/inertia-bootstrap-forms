@@ -57,6 +57,7 @@ export default defineComponent({
       ref="root"
       class="voice-recorder-results"
   >
+    <slot />
     <div v-if="showProblem && channel.problem" :class="alertClass" role="alert" :data-code="channel.problem.code">
       {{ channel.problem.message }}
     </div>
@@ -107,3 +108,9 @@ export default defineComponent({
     </ul>
   </div>
 </template>
+<style>
+.voice-recorder-box audio,
+.voice-recorder-results audio{
+  vertical-align: middle;
+}
+</style>

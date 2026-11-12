@@ -653,8 +653,4 @@ export default defineComponent({
   border-radius: var(--border-radius);
   border: 2px dashed var(--border-color);
 }
-
-.voice-recorder-box audio{
-  vertical-align: middle;;
-}
 </style>
