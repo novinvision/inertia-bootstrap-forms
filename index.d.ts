@@ -87,6 +87,12 @@ export declare const VoiceRecorderInput: FieldComponent<{
     locale?: Locale | null;
 }>;
 
+export declare const VoiceRecorderResultArea: DefineComponent<{
+    for: string; showList?: boolean; showProblem?: boolean;
+    listClass?: string | string[] | Record<string, boolean>;
+    alertClass?: string | string[] | Record<string, boolean>; internal?: boolean;
+}>;
+
 export declare const ComboboxInput: FieldComponent<{
     options?: OptionItem[];
     valueKey?: string | null;

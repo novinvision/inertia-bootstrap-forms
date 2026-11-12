@@ -25,6 +25,7 @@ import SwitchInput from './SwitchInput.vue';
 import TextAreaInput from './TextAreaInput.vue';
 import TextInput from './TextInput.vue';
 import VoiceRecorderInput from './VoiceRecorderInput.vue';   // کنار بقیه importها
+import VoiceRecorderResultArea from './VoiceRecorderResultArea.vue';   // کنار importها
 
 import { configureBootstrap } from './utils/bootstrap.js';
 import { configureI18n } from './i18n.js';
@@ -38,6 +39,7 @@ const components = {
     AmountInput,
     CaptchaInput,
     VoiceRecorderInput,
+    VoiceRecorderResultArea,
     CheckboxButtonInput,
     CheckboxInput,
     CheckboxToggle,
@@ -87,6 +89,7 @@ export {
     AmountInput,
     CaptchaInput,
     VoiceRecorderInput,
+    VoiceRecorderResultArea,
     CheckboxButtonInput,
     CheckboxInput,
     CheckboxToggle,

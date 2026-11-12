@@ -2,8 +2,10 @@
 import {computed, defineComponent, onMounted, reactive, ref, watch} from 'vue';
 import {fieldProps, useField} from './composables/useField.js';
 import {useDisposables} from './composables/useDisposables.js';
+import {formatTime, registerVoiceChannel, unregisterVoiceChannel, voiceAreaCounts} from './composables/useVoiceChannel.js';
 import {useI18n} from './i18n.js';
 import {laravelHeaders} from './utils/http.js';
+import VoiceRecorderResultArea from './VoiceRecorderResultArea.vue';
 
 const MESSAGES = {
   en: {
@@ -29,7 +31,7 @@ const MESSAGES = {
   fa: {
     start: 'ضبط صدا',
     stop: 'پایان ضبط',
-    idle: 'برای ضبط صدا اینجا کلیک کنید',
+    idle: 'برای ضبط روی میکروفن بزنید',
     starting: 'در انتظار اجازه دسترسی به میکروفن…',
     recording: 'در حال ضبط…',
     uploading: 'در حال ارسال…',
@@ -90,21 +92,24 @@ function classify(error) {
   }
 }
 
-const pad = (n) => String(Math.floor(n)).padStart(2, '0');
-const formatTime = (s) => `${pad(s / 60)}:${pad(s % 60)}`;
-
 /**
  * Voice recorder.
  *  - variant="box"    a full-width Bootstrap card with the record button, status and timer
- *  - variant="button" a single button that takes your own classes (`button-class`, `recording-class`)
- * Every recording is uploaded to `url` and the result is stored in the form; recordings are listed in a
- * Bootstrap list-group with a player. No extra libraries: it uses the browser's MediaRecorder (needs HTTPS).
+ *  - variant="button" a single button that takes your own classes (`button-class`, `recording-class`, `problem-class`)
+ * Every recording is uploaded to `url` and the result is stored in the form. No extra libraries: it uses the
+ * browser's MediaRecorder (needs HTTPS).
+ *
+ * Where the recordings (list-group with players) and the errors are shown:
+ *  - by default right inside / under the recorder
+ *  - anywhere you like with <VoiceRecorderResultArea for="<name or channel>" /> (the built-in output hides itself)
+ *  - inside any element of the page with `result-target="#my-div"`
  *
  * Endpoint contract (same as FileInput): POST multipart `file` → JSON { data: { path } } (or { path });
  * DELETE with the raw `path` as request body.
  */
 export default defineComponent({
   name: 'VoiceRecorderInput',
+  components: {VoiceRecorderResultArea},
   emits: ['update:modelValue', 'change', 'start', 'stop', 'recorded', 'progress', 'uploaded', 'removed', 'error'],
   props: {
     ...fieldProps,
@@ -120,16 +125,27 @@ export default defineComponent({
     /** Bitrate of the recording; 32 kbps opus is plenty for speech and keeps files tiny. */
     audioBitsPerSecond: {type: Number, default: 32000},
     audioConstraints: {type: Object, default: () => ({echoCancellation: true, noiseSuppression: true, autoGainControl: true})},
-    /** Classes of the button in `variant="button"` (idle) … */
-    buttonClass: {type: [String, Array, Object], default: 'btn-solid theme-primary'},
+    /** Classes of the button (idle) … */
+    buttonClass: {type: [String, Array, Object], default: 'btn-solid theme-inverse'},
+    /** … while there is a problem to show … */
     problemClass: {type: [String, Array, Object], default: 'btn-solid theme-danger'},
     /** … and while recording. */
     recordingClass: {type: [String, Array, Object], default: 'btn-solid theme-danger'},
+    /** Show the list of recordings (in the built-in output, in `result-target` and in the result areas). */
     showList: {type: Boolean, default: true},
     /** Ask the server to delete the file (DELETE {url}) when a recording is removed. */
     deleteOnRemove: {type: Boolean, default: true},
     /** (storedValue) => playable URL — used for recordings that come from the form data (edit pages). */
     playbackUrl: {type: Function, default: (value) => value},
+    /**
+     * Key that <VoiceRecorderResultArea for="…"> uses to find this recorder. Defaults to `name`.
+     * Set it when two recorders share the same name or have no name.
+     */
+    channel: {type: String, default: null},
+    /** CSS selector (or element) the list and errors are moved into, e.g. "#voice-results". It must exist in the page. */
+    resultTarget: {type: [String, Object], default: null},
+    /** Force the built-in output on / off. null = automatic: hidden while a <VoiceRecorderResultArea> is attached. */
+    inlineResults: {type: Boolean, default: null},
     startText: {type: String, default: null},
     stopText: {type: String, default: null},
     locale: {type: String, default: null},
@@ -141,6 +157,9 @@ export default defineComponent({
 
     const t = (key) => (MESSAGES[locale.value] || MESSAGES.en)[key] ?? MESSAGES.en[key] ?? key;
 
+    const uid = `voice-${++counter}`;
+    const channelKey = props.channel ?? props.name ?? uid;
+
     const root = ref(null);
     const items = ref([]);
     const recording = ref(false);
@@ -148,6 +167,7 @@ export default defineComponent({
     const seconds = ref(0);
     const problem = ref(null); // { code, message }
     const supported = ref(true);
+    const mounted = ref(false);
 
     const requests = new Map();
     let recorder = null;
@@ -161,6 +181,13 @@ export default defineComponent({
     const time = computed(() => formatTime(seconds.value));
     const uploading = computed(() => items.value.some((i) => i.status === 'uploading'));
     const blocked = computed(() => !supported.value || locked.value);
+
+    // where the results go
+    const externalArea = computed(() => (voiceAreaCounts[channelKey] || 0) > 0);
+    const showInline = computed(() => !props.resultTarget && (props.inlineResults ?? !externalArea.value));
+    const stateClass = computed(() =>
+        recording.value ? props.recordingClass : problem.value ? props.problemClass : props.buttonClass
+    );
 
     const statusText = computed(() => {
       if (starting.value) return t('starting');
@@ -228,6 +255,12 @@ export default defineComponent({
     }
 
     onMounted(() => {
+      mounted.value = true;
+
+      // publish the list / errors so that <VoiceRecorderResultArea for="…"> can show them anywhere
+      registerVoiceChannel(channelKey, {owner: uid, items, problem, locked, t, remove, retry: upload});
+      d.add(() => unregisterVoiceChannel(channelKey, uid));
+
       supported.value =
           typeof navigator !== 'undefined' && !!navigator.mediaDevices?.getUserMedia && typeof MediaRecorder !== 'undefined';
 
@@ -480,13 +513,6 @@ export default defineComponent({
       if (notify) emit('removed', item);
     }
 
-    // only one player at a time
-    function onPlay(event) {
-      root.value?.querySelectorAll('audio').forEach((audio) => {
-        if (audio !== event.target) audio.pause();
-      });
-    }
-
     // ---------- cleanup ----------
     d.add(() => {
       discard = true;
@@ -504,7 +530,7 @@ export default defineComponent({
       if (field.form.value) field.form.value.uploading = null;
     });
 
-    expose({start, stop, toggle});
+    expose({start, stop, toggle, channel: channelKey});
 
     return {
       ...field,
@@ -518,12 +544,13 @@ export default defineComponent({
       problem,
       supported,
       blocked,
+      mounted,
+      channelKey,
+      showInline,
+      stateClass,
       statusText,
       buttonLabel,
       toggle,
-      upload,
-      remove,
-      onPlay,
       formatTime,
     };
   },
@@ -533,20 +560,25 @@ export default defineComponent({
 <template>
   <div ref="root" class="voice-recorder" :id="inputId" :class="{ 'is-invalid': isInvalid }">
     <!-- variant: box (full-width Bootstrap card) -->
-    <div v-if="variant === 'box'" class="card w-100">
+    <div v-if="variant === 'box'" class="voice-recorder-box p-5">
       <div class="card-body">
         <div class="row gx-5">
-          <div class="col-auto mx-auto" v-if="problem">
-            <div class="alert theme-danger p-1 text-center mb-4" role="alert" :data-code="problem.code">{{ problem.message }}</div>
+          <div class="col-auto mx-auto" v-if="showInline && problem">
+            <VoiceRecorderResultArea
+                :for="channelKey"
+                internal
+                :show-list="false"
+                alert-class="alert theme-danger p-1 text-center mb-4"
+            />
           </div>
           <div class="col-12 text-center">
-            <div class="btn btn-subtle theme-inverse mx-auto" @click="toggle">
+            <div class="btn btn-subtle mx-auto p-3" @click="toggle">
               <div class="row gx-5 align-items-center">
                 <div class="col-auto">
                   <button
                       type="button"
                       class="btn"
-                      :class="recording ? recordingClass : buttonClass"
+                      :class="stateClass"
                       :disabled="blocked || starting"
                       :aria-label="buttonLabel"
                       :aria-pressed="recording"
@@ -578,80 +610,51 @@ export default defineComponent({
             </div>
           </div>
         </div>
-        <ul v-if="showList && items.length" class="list-group mt-2">
-          <li v-for="item in items" :key="item.id" class="list-group-item">
-            <div class="row gx-3 align-items-center">
-              <div class="col-12 sm:col-4">
-                <audio class="align-middle w-100" controls preload="metadata" :src="item.src" @play="onPlay"></audio>
-              </div>
-              <div class="col-auto" v-if="item.seconds !== null">
-                <span class="fg-secondary fanum" dir="ltr">{{ formatTime(item.seconds) }}</span>
-              </div>
-              <div class="col">
-                <div v-if="item.status === 'uploading'" class="progress" role="progressbar" :aria-valuenow="item.percent" aria-valuemin="0" aria-valuemax="100">
-                  <div class="progress-bar" :style="{ width: item.percent + '%' }"></div>
-                </div>
-                <div v-if="item.status === 'error'" class="fg-danger" role="alert">{{ item.error }}</div>
-              </div>
-              <div class="col-auto" v-if="item.status === 'error'">
-                <button
-                    type="button"
-                    class="btn-text theme-secondary btn-icon"
-                    :aria-label="t('retry')"
-                    @click="upload(item)"
-                >
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-                       aria-hidden="true">
-                    <path d="M13.5 3v3.5H10"/>
-                    <path d="M3.2 6.5A5.5 5.5 0 0 1 13 6.5M12.8 9.5A5.5 5.5 0 0 1 3 9.5M2.5 13V9.5H6"/>
-                  </svg>
-                </button>
-              </div>
-              <div class="col-auto">
-                <button
-                    v-if="!locked"
-                    type="button"
-                    class="btn-text theme-danger btn-icon"
-                    :aria-label="t('remove')"
-                    @click="remove(item)"
-                >
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-                       aria-hidden="true">
-                    <path d="M2.5 4.5h11M6 4.5V3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1.5M4 4.5l.6 8.1a1 1 0 0 0 1 .9h4.8a1 1 0 0 0 1-.9l.6-8.1"/>
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </li>
-        </ul>
+        <VoiceRecorderResultArea
+            v-if="showInline && showList"
+            class="d-block mt-2"
+            :for="channelKey"
+            internal
+            :show-problem="false"
+        />
       </div>
     </div>
+
     <!-- variant: button (your own classes) -->
-    <button
-        v-else
-        type="button"
-        :disabled="blocked || starting"
-        :aria-pressed="recording"
-        :class="{
-          [recordingClass]: recording,
-          [buttonClass]: !problem && !recording,
-          [problemClass]: problem,
-        }"
-        @click="toggle"
-    >
-      <slot :recording="recording" :starting="starting" :seconds="seconds" :time="time">
-        <span v-if="starting" class="spinner-border spinner-sm me-2" role="status" aria-hidden="true"></span>
-        <svg v-else-if="recording" class="me-2" width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-          <rect x="3.5" y="3.5" width="9" height="9" rx="1.5"/>
-        </svg>
-        <svg v-else class="me-2" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-             stroke-linejoin="round" aria-hidden="true">
-          <rect x="5.5" y="1.5" width="5" height="8" rx="2.5"/>
-          <path d="M3 7.5a5 5 0 0 0 10 0M8 12.5v2"/>
-        </svg>
-        {{ buttonLabel }}
-        <span v-if="recording" class="ms-2 fanum" dir="ltr">{{ time }}</span>
-      </slot>
-    </button>
+    <template v-else>
+      <button type="button" :disabled="blocked || starting" :aria-pressed="recording" :class="stateClass" @click="toggle">
+        <slot :recording="recording" :starting="starting" :seconds="seconds" :time="time">
+          <span v-if="starting" class="spinner-border spinner-sm me-2" role="status" aria-hidden="true"></span>
+          <svg v-else-if="recording" class="me-2" width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <rect x="3.5" y="3.5" width="9" height="9" rx="1.5"/>
+          </svg>
+          <svg v-else class="me-2" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+               stroke-linejoin="round" aria-hidden="true">
+            <rect x="5.5" y="1.5" width="5" height="8" rx="2.5"/>
+            <path d="M3 7.5a5 5 0 0 0 10 0M8 12.5v2"/>
+          </svg>
+          {{ buttonLabel }}
+          <span v-if="recording" class="ms-2 fanum" dir="ltr">{{ time }}</span>
+        </slot>
+      </button>
+      <VoiceRecorderResultArea v-if="showInline" class="d-block mt-2" :for="channelKey" internal :show-list="showList" />
+    </template>
+
+    <!-- result-target="#some-div": list and errors are rendered inside that element -->
+    <Teleport v-if="resultTarget && mounted" :to="resultTarget">
+      <VoiceRecorderResultArea :for="channelKey" internal :show-list="showList" />
+    </Teleport>
   </div>
 </template>
+<style>
+.voice-recorder-box{
+  display: block;
+  background-color: var(--bg-1);
+  border-radius: var(--border-radius);
+  border: 2px dashed var(--border-color);
+}
+
+.voice-recorder-box audio{
+  vertical-align: middle;;
+}
+</style>
